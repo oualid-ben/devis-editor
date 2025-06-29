@@ -2,190 +2,638 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Éditeur de Devis</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
-    *{box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
-    body{margin:0;background:#f6f8fc}
-    .container{max-width:1150px;margin:34px auto;padding:44px 50px;background:#fff;border-radius:18px;box-shadow:0 8px 28px #0001}
-    h2{margin:0 0 28px;font-size:2rem;font-weight:700}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px;margin-bottom:26px}
-    label{display:flex;flex-direction:column;gap:6px;font-size:.94rem;font-weight:600;color:#222}
-    input,select{padding:10px 11px;border:1px solid #cad3f8;border-radius:6px;background:#fdfefe;font-size:.94rem;width:100%}
-    input[type=number]::-webkit-inner-spin-button{opacity:.35}
-    #artisanBlock,#clientBlock{background:#f5f7fc;border-radius:12px;padding:20px 24px;margin-bottom:32px}
-    #artisanBlock h3,#clientBlock h3{margin:0 0 12px;font-size:1.05rem;font-weight:700}
-    .table-wrapper{overflow-x:auto;margin-bottom:20px}
-    table{width:100%;border-collapse:separate;border-spacing:0 10px}
-    th{background:#eef1fb;font-weight:600;font-size:.9rem;padding:10px 8px;border-radius:8px 8px 0 0;text-align:left}
-    td{background:#fff;border:1px solid #edf2fa;padding:6px}
-    td.ht,td.ttc{text-align:right;font-variant-numeric:tabular-nums}
-    .action-btn{border:none;border-radius:6px;padding:10px 26px;font-size:1rem;cursor:pointer;transition:.15s}
-    .add-btn{background:#5146e1;color:#fff;margin-bottom:18px}
-    .add-btn:hover{background:#3c33c0}
-    .delete-btn{background:#ff5252;color:#fff;padding:4px 11px;border-radius:4px;cursor:pointer}
-    #totaux{background:#f0f4ff;border-radius:10px;padding:22px 26px;width:fit-content;margin-top:18px;font-size:1.04rem;font-weight:500}
-    #totaux strong{font-size:1.15rem}
-    .download-btn{background:#20b05b;color:#fff;font-weight:600;font-size:1.05rem;padding:15px 34px;border:none;border-radius:7px;box-shadow:0 2px 10px #1fa2722b;margin-top:26px;cursor:pointer}
-    .download-btn:hover{background:#17924b}
-    .flex{display:flex;align-items:flex-end;gap:16px;margin:14px 0}
-    .flex label{margin:0}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 
+        0 32px 64px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      animation: slideIn 0.6s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #64748b;
+      font-size: 1.1rem;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .section:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 2px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+    }
+
+    .form-group {
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      transition: color 0.2s ease;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      background: rgba(255, 255, 255, 1);
+    }
+
+    .form-group input:focus + label, .form-group select:focus + label {
+      color: #667eea;
+    }
+
+    .table-container {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      margin-bottom: 32px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 20px 16px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      transition: all 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: rgba(102, 126, 234, 0.05);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    td input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      background: rgba(255, 255, 255, 0.8);
+      transition: all 0.2s ease;
+    }
+
+    td input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+      background: white;
+    }
+
+    .ht, .ttc {
+      text-align: right;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: #1e293b;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 16px 32px;
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      padding: 20px 40px;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 8px 16px;
+      font-size: 0.875rem;
+      border-radius: 8px;
+    }
+
+    .btn-danger:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .totals-section {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+      border-radius: 16px;
+      padding: 32px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-top: 32px;
+    }
+
+    .totals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .total-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .total-item:last-child {
+      border-bottom: none;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .total-label {
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .total-value {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .discount-section {
+      display: flex;
+      align-items: end;
+      gap: 24px;
+      margin: 24px 0;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #667eea;
+    }
+
+    .download-section {
+      text-align: center;
+      margin-top: 48px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 24px;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .section {
+        padding: 24px;
+      }
+      
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .discount-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
-<div class="container">
-  <h2>Modifier les informations du devis</h2>
+  <div class="container">
+    <div class="header">
+      <h1>✨ Éditeur de Devis</h1>
+      <p>Créez des devis professionnels en quelques clics</p>
+    </div>
 
-  <!-- MÉTA DEVIS -->
-  <div class="grid">
-    <label>Numéro du devis :<input id="numeroDevis" value="D-MAN-250622-002"></label>
-    <label>Date :<input type="date" id="dateDevis" value="2025-06-22"></label>
-    <label>Objet :<input id="objetDevis" value="Peinture intérieure salon"></label>
-    <label>Devise :<input id="devise" value="EUR"></label>
-  </div>
+    <!-- MÉTA DEVIS -->
+    <div class="section">
+      <h3 class="section-title">📋 Informations du devis</h3>
+      <div class="grid">
+        <div class="form-group">
+          <label>Numéro du devis</label>
+          <input id="numeroDevis" value="D-MAN-250622-002">
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="dateDevis" value="2025-06-22">
+        </div>
+        <div class="form-group">
+          <label>Objet</label>
+          <input id="objetDevis" value="Peinture intérieure salon">
+        </div>
+        <div class="form-group">
+          <label>Devise</label>
+          <input id="devise" value="EUR">
+        </div>
+      </div>
+    </div>
 
-  <!-- INFO ARTISAN -->
-  <div id="artisanBlock">
-    <h3>Informations de l’artisan / entreprise</h3>
-    <div class="grid">
-      <label>Nom / Raison sociale :<input id="artisanNom" value="Entreprise ABC"></label>
-      <label>Adresse :<input id="artisanAdresse" value="12 rue des Lilas, 75000 Paris"></label>
-      <label>Téléphone :<input id="artisanTel" value="06 00 00 00 00"></label>
-      <label>Email :<input id="artisanEmail" value="contact@abc.fr"></label>
+    <!-- INFO ARTISAN -->
+    <div class="section">
+      <h3 class="section-title">🏢 Informations de l'artisan / entreprise</h3>
+      <div class="grid">
+        <div class="form-group">
+          <label>Nom / Raison sociale</label>
+          <input id="artisanNom" value="Entreprise ABC">
+        </div>
+        <div class="form-group">
+          <label>Adresse</label>
+          <input id="artisanAdresse" value="12 rue des Lilas, 75000 Paris">
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input id="artisanTel" value="06 00 00 00 00">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input id="artisanEmail" value="contact@abc.fr">
+        </div>
+      </div>
+    </div>
+
+    <!-- INFO CLIENT -->
+    <div class="section">
+      <h3 class="section-title">👤 Informations client</h3>
+      <div class="grid">
+        <div class="form-group">
+          <label>Nom complet</label>
+          <input id="clientNom" value="Jean Dupont">
+        </div>
+        <div class="form-group">
+          <label>Adresse</label>
+          <input id="clientAdresse" placeholder="Adresse du client (optionnel)">
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE PRESTATIONS -->
+    <div class="section">
+      <h3 class="section-title">💼 Prestations</h3>
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table id="table-prestations">
+            <thead>
+              <tr>
+                <th>Prestation</th>
+                <th>Quantité</th>
+                <th>Unité</th>
+                <th>Prix unitaire</th>
+                <th>TVA (%)</th>
+                <th>Total HT</th>
+                <th>Total TTC</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="ajouterLigne()">
+        ➕ Ajouter une ligne
+      </button>
+    </div>
+
+    <!-- REMISE GLOBALE -->
+    <div class="discount-section">
+      <div class="form-group" style="flex: 1;">
+        <label>Remise globale (€)</label>
+        <input type="number" id="remise" value="0" oninput="recalculer()">
+      </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="applyRemise" checked onchange="recalculer()">
+        <label>Appliquer la remise</label>
+      </div>
+    </div>
+
+    <!-- TOTAUX -->
+    <div class="totals-section">
+      <div id="totaux"></div>
+    </div>
+
+    <div class="download-section">
+      <button class="btn btn-secondary" onclick="genererPDF()">
+        📄 Télécharger le PDF
+      </button>
     </div>
   </div>
 
-  <!-- INFO CLIENT -->
-  <div id="clientBlock">
-    <h3>Informations client</h3>
-    <div class="grid">
-      <label>Nom complet :<input id="clientNom" value="Jean Dupont"></label>
-      <label>Adresse :<input id="clientAdresse" placeholder="(optionnel)"></label>
-    </div>
-  </div>
+  <script>
+    const { jsPDF } = window.jspdf;
+    let data = JSON.parse(decodeURIComponent(new URLSearchParams(location.search).get('data') || '{"prestations":[]}'));
+    data.prestations = data.prestations || [];
 
-  <!-- TABLE PRESTATIONS -->
-  <div class="table-wrapper">
-    <table id="table-prestations">
-      <thead>
-        <tr><th>Prestation</th><th>Quantité</th><th>Unité</th><th>Prix unitaire</th><th>TVA (%)</th><th>Total&nbsp;HT</th><th>Total&nbsp;TTC</th><th></th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <button class="action-btn add-btn" onclick="ajouterLigne()">+ Ajouter une ligne</button>
+    const tbody = document.querySelector('#table-prestations tbody');
+    const remiseInput = document.getElementById('remise');
+    const applyRemise = document.getElementById('applyRemise');
 
-  <!-- REMISE GLOBALE -->
-  <div class="flex">
-    <label>Remise globale (€) :<input type="number" id="remise" value="0" oninput="recalculer()"></label>
-    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="applyRemise" checked onchange="recalculer()"> Appliquer</label>
-  </div>
+    function rowHTML(i, p) {
+      return `<td><input value="${p.typedeprestation || ''}" oninput="data.prestations[${i}].typedeprestation=this.value"></td>
+        <td><input type="number" min="0" value="${p.quantite?.valeur || 0}" oninput="data.prestations[${i}].quantite.valeur=parseFloat(this.value)||0;recalculer()"></td>
+        <td><input value="${p.quantite?.unite || ''}" oninput="data.prestations[${i}].quantite.unite=this.value"></td>
+        <td><input type="number" min="0" value="${p.prixunitaire || 0}" oninput="data.prestations[${i}].prixunitaire=parseFloat(this.value)||0;recalculer()"></td>
+        <td><input type="number" min="0" value="${p.tauxtva || 20}" oninput="data.prestations[${i}].tauxtva=parseFloat(this.value)||0;recalculer()"></td>
+        <td class="ht">0.00</td><td class="ttc">0.00</td>
+        <td><button class="btn btn-danger" onclick="supprimer(${i})">🗑️</button></td>`
+    }
 
-  <div id="totaux"></div>
-  <button class="download-btn" onclick="genererPDF()">⬇️ Télécharger le PDF</button>
-</div>
+    function render() {
+      tbody.innerHTML = '';
+      data.prestations.forEach((p, i) => {
+        if (!p.quantite) p.quantite = { valeur: 0, unite: '' };
+        const tr = document.createElement('tr');
+        tr.innerHTML = rowHTML(i, p);
+        tr.classList.add('fade-in');
+        tbody.appendChild(tr);
+      });
+      recalculer();
+    }
 
-<script>
-  const { jsPDF } = window.jspdf;
-  let data = JSON.parse(decodeURIComponent(new URLSearchParams(location.search).get('data') || '{"prestations":[]}'));
-  data.prestations = data.prestations || [];
+    function ajouterLigne() {
+      data.prestations.push({ typedeprestation: '', quantite: { valeur: 0, unite: '' }, prixunitaire: 0, tauxtva: 20 });
+      render();
+    }
 
-  const tbody = document.querySelector('#table-prestations tbody');
-  const remiseInput = document.getElementById('remise');
-  const applyRemise = document.getElementById('applyRemise');
+    function supprimer(i) {
+      data.prestations.splice(i, 1);
+      render();
+    }
 
-  function rowHTML(i, p) {
-    return `<td><input value="${p.typedeprestation || ''}" oninput="data.prestations[${i}].typedeprestation=this.value"></td>
-      <td><input type="number" min="0" value="${p.quantite?.valeur || 0}" oninput="data.prestations[${i}].quantite.valeur=parseFloat(this.value)||0;recalculer()"></td>
-      <td><input value="${p.quantite?.unite || ''}" oninput="data.prestations[${i}].quantite.unite=this.value"></td>
-      <td><input type="number" min="0" value="${p.prixunitaire || 0}" oninput="data.prestations[${i}].prixunitaire=parseFloat(this.value)||0;recalculer()"></td>
-      <td><input type="number" min="0" value="${p.tauxtva || 20}" oninput="data.prestations[${i}].tauxtva=parseFloat(this.value)||0;recalculer()"></td>
-      <td class="ht">0.00</td><td class="ttc">0.00</td>
-      <td><button class="delete-btn" onclick="supprimer(${i})">✕</button></td>`
-  }
+    function calculs() {
+      let totalHT = 0, totalTVA = 0;
+      data.prestations.forEach(p => {
+        const ht = p.prixunitaire * p.quantite.valeur;
+        const tva = ht * (p.tauxtva / 100);
+        totalHT += ht; 
+        totalTVA += tva;
+      });
+      const remise = applyRemise.checked ? (parseFloat(remiseInput.value) || 0) : 0;
+      const sousTotal = totalHT - remise;
+      const totalTTC = sousTotal + totalTVA;
+      return { totalHT, totalTVA, remise, sousTotal, totalTTC };
+    }
 
-  function render() {
-    tbody.innerHTML = '';
-    data.prestations.forEach((p, i) => {
-      if (!p.quantite) p.quantite = { valeur: 0, unite: '' };
-      const tr = document.createElement('tr');
-      tr.innerHTML = rowHTML(i, p);
-      tbody.appendChild(tr);
-    });
-    recalculer();
-  }
-  function ajouterLigne() {
-    data.prestations.push({ typedeprestation: '', quantite: { valeur: 0, unite: '' }, prixunitaire: 0, tauxtva: 20 });
+    function recalculer() {
+      tbody.querySelectorAll('tr').forEach((tr, i) => {
+        const p = data.prestations[i];
+        const ht = p.prixunitaire * p.quantite.valeur;
+        const ttc = ht * (1 + p.tauxtva / 100);
+        tr.querySelector('.ht').textContent = ht.toFixed(2) + ' €';
+        tr.querySelector('.ttc').textContent = ttc.toFixed(2) + ' €';
+      });
+
+      const { totalHT, totalTVA, remise, sousTotal, totalTTC } = calculs();
+
+      let totauxHTML = `
+        <div class="total-item">
+          <span class="total-label">Total HT :</span>
+          <span class="total-value">${totalHT.toFixed(2)} €</span>
+        </div>`;
+      
+      if (remise > 0) {
+        totauxHTML += `
+          <div class="total-item">
+            <span class="total-label">Remise :</span>
+            <span class="total-value">-${remise.toFixed(2)} €</span>
+          </div>`;
+      }
+      
+      totauxHTML += `
+        <div class="total-item">
+          <span class="total-label">Sous-total :</span>
+          <span class="total-value">${sousTotal.toFixed(2)} €</span>
+        </div>
+        <div class="total-item">
+          <span class="total-label">TVA :</span>
+          <span class="total-value">${totalTVA.toFixed(2)} €</span>
+        </div>
+        <div class="total-item">
+          <span class="total-label">Total TTC :</span>
+          <span class="total-value">${totalTTC.toFixed(2)} €</span>
+        </div>`;
+
+      document.getElementById('totaux').innerHTML = totauxHTML;
+    }
+
+    function genererPDF() {
+      const { jsPDF } = window.jspdf; 
+      const doc = new jsPDF({ unit:'pt', format:'a4' });
+      
+      // Header title
+      doc.setFontSize(18).text('Devis', 40, 40);
+      doc.setFontSize(11);
+      
+      // Artisan info
+      const art = [
+        document.getElementById('artisanNom').value, 
+        document.getElementById('artisanAdresse').value,
+        `Téléphone : ${document.getElementById('artisanTel').value}`, 
+        `Email : ${document.getElementById('artisanEmail').value}`
+      ];
+      art.forEach((l,i) => doc.text(l, 40, 70 + i * 14));
+      
+      // Client info (right side)
+      const cliX = 340;
+      const cli = [document.getElementById('clientNom').value, document.getElementById('clientAdresse').value];
+      doc.text('Client :', cliX, 70);
+      cli.forEach((l,i) => doc.text(l, cliX, 84 + i * 14));
+      
+      let metaY = 70 + Math.max(art.length, cli.length + 1) * 14 + 16;
+      doc.text(`Numéro : ${document.getElementById('numeroDevis').value}`, 40, metaY);
+      doc.text(`Date : ${document.getElementById('dateDevis').value}`, 240, metaY);
+      doc.text(`Objet : ${document.getElementById('objetDevis').value}`, 40, metaY + 24);
+      
+      // Prestations table
+      const body = data.prestations.map(p => [
+        p.typedeprestation,
+        p.quantite.valeur,
+        p.quantite.unite,
+        p.prixunitaire,
+        p.tauxtva,
+        (p.prixunitaire * p.quantite.valeur).toFixed(2),
+        (p.prixunitaire * p.quantite.valeur * (1 + p.tauxtva / 100)).toFixed(2)
+      ]);
+      
+      doc.autoTable({
+        startY: metaY + 44,
+        head: [['Prestation','Qté','U','PU','TVA %','HT','TTC']],
+        body,
+        styles: { halign:'center', fontSize:9 },
+        headStyles: { fillColor:[102, 126, 234], textColor:255, fontStyle:'bold' }
+      });
+      
+      const finY = doc.lastAutoTable.finalY || metaY + 64;
+      const { totalHT, totalTVA, remise, sousTotal, totalTTC } = calculs();
+      
+      const lines = [`Total HT : €${totalHT.toFixed(2)}`];
+      if (remise > 0) lines.push(`Remise : €${remise.toFixed(2)}`);
+      lines.push(
+        `Sous-total : €${sousTotal.toFixed(2)}`,
+        `TVA : €${totalTVA.toFixed(2)}`,
+        `Total TTC : €${totalTTC.toFixed(2)}`
+      );
+      
+      doc.text(lines, 40, finY + 28);
+      doc.save(`devis_${document.getElementById('clientNom').value.replace(/\s+/g,'_')}.pdf`);
+    }
+
+    // Initialize
+    document.getElementById('clientNom').value = data.nomduclient || '';
     render();
-  }
-  function supprimer(i) {
-    data.prestations.splice(i, 1);
-    render();
-  }
-
-  function calculs() {
-    let totalHT = 0, totalTVA = 0;
-    data.prestations.forEach(p => {
-      const ht = p.prixunitaire * p.quantite.valeur;
-      const tva = ht * (p.tauxtva / 100);
-      totalHT += ht; totalTVA += tva;
-    });
-    const remise = applyRemise.checked ? (parseFloat(remiseInput.value) || 0) : 0;
-    const sousTotal = totalHT - remise;
-    const totalTTC = sousTotal + totalTVA;
-    return { totalHT, totalTVA, remise, sousTotal, totalTTC };
-  }
-
-  function recalculer() {
-    tbody.querySelectorAll('tr').forEach((tr, i) => {
-      const p = data.prestations[i];
-      const ht = p.prixunitaire * p.quantite.valeur;
-      const ttc = ht * (1 + p.tauxtva / 100);
-      tr.querySelector('.ht').textContent = ht.toFixed(2);
-      tr.querySelector('.ttc').textContent = ttc.toFixed(2);
-    });
-
-    const { totalHT, totalTVA, remise, sousTotal, totalTTC } = calculs();
-
-    document.getElementById('totaux').innerHTML = `Total HT : €${totalHT.toFixed(2)}<br>`+
-      (remise>0 ? `Remise : €${remise.toFixed(2)}<br>` : '')+
-      `Sous-total : €${sousTotal.toFixed(2)}<br>TVA : €${totalTVA.toFixed(2)}<br><strong>Total TTC : €${totalTTC.toFixed(2)}</strong>`;
-  }
-
-  function genererPDF() {
-    const { jsPDF } = window.jspdf; const doc = new jsPDF({ unit:'pt', format:'a4' });
-    // header title
-    doc.setFontSize(18).text('Devis', 40, 40);
-    doc.setFontSize(11);
-    // artisan
-    const art = [document.getElementById('artisanNom').value, document.getElementById('artisanAdresse').value,
-      `Téléphone : ${document.getElementById('artisanTel').value}`, `Email : ${document.getElementById('artisanEmail').value}`];
-    art.forEach((l,i)=>doc.text(l,40,70+i*14));
-    // client right
-    const cliX=340;
-    const cli=[document.getElementById('clientNom').value, document.getElementById('clientAdresse').value];
-    doc.text('Client :', cliX, 70);
-    cli.forEach((l,i)=>doc.text(l,cliX,84+i*14));
-    let metaY=70+Math.max(art.length,cli.length+1)*14+16;
-    doc.text(`Numéro : ${document.getElementById('numeroDevis').value}`,40,metaY);
-    doc.text(`Date : ${document.getElementById('dateDevis').value}`,240,metaY);
-    doc.text(`Objet : ${document.getElementById('objetDevis').value}`,40,metaY+24);
-    // table
-    const body=data.prestations.map(p=>[p.typedeprestation,p.quantite.valeur,p.quantite.unite,p.prixunitaire,p.tauxtva,(p.prixunitaire*p.quantite.valeur).toFixed(2),(p.prixunitaire*p.quantite.valeur*(1+p.tauxtva/100)).toFixed(2)]);
-    doc.autoTable({startY:metaY+44,head:[['Prestation','Qté','U','PU','TVA %','HT','TTC']],body,styles:{halign:'center',fontSize:9},headStyles:{fillColor:[24,90,160],textColor:255,fontStyle:'bold'}});
-    const finY=doc.lastAutoTable.finalY||metaY+64;
-    const { totalHT,totalTVA,remise,sousTotal,totalTTC }=calculs();
-    const lines=[`Total HT : €${totalHT.toFixed(2)}`];
-    if(remise>0) lines.push(`Remise : €${remise.toFixed(2)}`);
-    lines.push(`Sous-total : €${sousTotal.toFixed(2)}`,`TVA : €${totalTVA.toFixed(2)}`,`Total TTC : €${totalTTC.toFixed(2)}`);
-    doc.text(lines,40,finY+28);
-
-    doc.save(`devis_${document.getElementById('clientNom').value.replace(/\s+/g,'_')}.pdf`);
-  }
-
-  document.getElementById('clientNom').value=data.nomduclient||'';
-  render();
-</script>
+  </script>
 </body>
 </html>
