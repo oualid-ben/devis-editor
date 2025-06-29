@@ -722,7 +722,7 @@
       doc.setDrawColor(...lightGray);
       doc.rect(350, totalsBoxY, 205, totalsBoxHeight, 'D');
       
-      // Totaux
+      // Totaux avec alignement à droite
       doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...darkGray);
@@ -731,25 +731,29 @@
       
       // Total HT
       doc.text('Total HT:', 360, totalsY);
-      doc.text(`${totalHT.toFixed(2)} €`, 540, totalsY);
+      const totalHTText = `${totalHT.toFixed(2)} €`;
+      doc.text(totalHTText, 545 - doc.getTextWidth(totalHTText), totalsY);
       
       // Remise si applicable
       if (remise > 0) {
         totalsY += 15;
         doc.setTextColor(239, 68, 68);
         doc.text('Remise:', 360, totalsY);
-        doc.text(`-${remise.toFixed(2)} €`, 540, totalsY);
+        const remiseText = `-${remise.toFixed(2)} €`;
+        doc.text(remiseText, 545 - doc.getTextWidth(remiseText), totalsY);
         doc.setTextColor(...darkGray);
         
         totalsY += 15;
         doc.text('Sous-total:', 360, totalsY);
-        doc.text(`${sousTotal.toFixed(2)} €`, 540, totalsY);
+        const sousTotalText = `${sousTotal.toFixed(2)} €`;
+        doc.text(sousTotalText, 545 - doc.getTextWidth(sousTotalText), totalsY);
       }
       
       // TVA
       totalsY += 15;
       doc.text('TVA:', 360, totalsY);
-      doc.text(`${totalTVA.toFixed(2)} €`, 540, totalsY);
+      const tvaText = `${totalTVA.toFixed(2)} €`;
+      doc.text(tvaText, 545 - doc.getTextWidth(tvaText), totalsY);
       
       // Total TTC - mis en évidence
       totalsY += 20;
@@ -757,10 +761,12 @@
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...primaryColor);
       doc.text('TOTAL TTC:', 360, totalsY);
-      doc.text(`${totalTTC.toFixed(2)} €`, 540, totalsY);
+      const totalTTCText = `${totalTTC.toFixed(2)} €`;
+      doc.text(totalTTCText, 545 - doc.getTextWidth(totalTTCText), totalsY);
       
-      // Pied de page moderne
-      const footerY = 750;
+      // Pied de page moderne - positionné tout en bas
+      const pageHeight = 841.89; // Hauteur d'une page A4 en points
+      const footerY = pageHeight - 50;
       doc.setFillColor(...primaryColor);
       doc.rect(0, footerY, 595, 50, 'F');
       
