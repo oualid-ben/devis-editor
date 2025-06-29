@@ -1,106 +1,177 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Éditeur de Devis</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { font-family: sans-serif; background: #f8f9fc; padding: 2rem; }
-    input { padding: 0.5rem; border-radius: 0.25rem; border: 1px solid #ccc; width: 100%; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white; border-radius: 0.5rem; overflow: hidden; }
-    th, td { border: 1px solid #ddd; padding: 0.75rem; text-align: left; }
-    .section { display: flex; gap: 1rem; margin-bottom: 1rem; }
-    .btn { padding: 0.5rem 1rem; border: none; border-radius: 5px; cursor: pointer; }
-    .primary { background: #4f46e5; color: white; }
-    .secondary { background: #e0e7ff; color: #1e1b4b; }
+    body { background: #fafbfe; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
+    .container { max-width: 1200px; margin: 36px auto; background: #fff; border-radius: 18px; box-shadow: 0 8px 32px #0001; padding: 40px 48px; }
+    h2 { font-size: 2.2rem; font-weight: 700; margin-bottom: 36px; }
+    .row { display: flex; gap: 32px; margin-bottom: 18px; }
+    .row label { font-weight: 600; flex: 1; }
+    .meta input { font-size: 1rem; border-radius: 6px; border: 1px solid #c6d0f5; padding: 8px 10px; width: 100%; }
+    #nomClient { margin-bottom: 20px; font-size: 1.1rem; font-weight: 600; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin: 32px 0 16px 0; }
+    th { background: #f5f7fa; font-weight: 600; font-size: 1rem; padding: 12px 8px; border-radius: 8px 8px 0 0; }
+    td { background: #fff; border: 1px solid #edf2fa; font-size: 1rem; padding: 10px 8px; border-radius: 8px; }
+    input[type="text"], input[type="number"] { border: 1px solid #c6d0f5; border-radius: 6px; padding: 7px; font-size: 1rem; background: #fafdff; }
+    input[type="number"]::-webkit-inner-spin-button { opacity: .3; }
+    .add-btn { background: #5146e1; color: #fff; border: none; border-radius: 6px; padding: 10px 26px; font-size: 1rem; cursor: pointer; margin-top: 8px; margin-bottom: 16px; transition: background .15s;}
+    .add-btn:hover { background: #3a32bb;}
+    .totaux { background: #f5f7fa; border-radius: 10px; padding: 20px 24px; margin-top: 24px; font-size: 1.1rem; width: fit-content; font-weight: 500;}
+    .totaux strong { font-size: 1.18rem; color: #1b1c22; }
+    .actions { margin-top: 36px; }
+    .download-btn { background: #36c276; color: #fff; border: none; border-radius: 7px; padding: 16px 32px; font-size: 1.08rem; font-weight: 600; cursor: pointer; margin-top: 10px; box-shadow: 0 2px 10px #1fa27222;}
+    .download-btn:hover { background: #259557; }
   </style>
 </head>
 <body>
-  <h2>Modifier les informations du devis</h2>
-  <div class="section">
-    <div><label>Numéro du devis : <input id="numDevis" value="D-MAN-250622-002"></label></div>
-    <div><label>Date : <input type="date" id="date" value="2025-06-22"></label></div>
-    <div><label>Objet : <input id="objet" value="Peinture intérieure salon"></label></div>
-    <div><label>Devise : <input id="devise" value="EUR"></label></div>
-  </div>
-  <div><strong>Client : </strong><span id="client">Jean Dupont</span></div>
-
-  <table id="devisTable">
-    <thead>
-      <tr><th>Prestation</th><th>Quantité</th><th>Unité</th><th>Prix Unitaire</th><th>TVA (%)</th><th>Total HT</th><th>Total TTC</th></tr>
-    </thead>
-    <tbody id="prestations">
-      <tr>
-        <td><input value="Peinture"></td>
-        <td><input type="number" value="5"></td>
-        <td><input value="m2"></td>
-        <td><input type="number" value="50"></td>
-        <td><input type="number" value="20"></td>
-        <td class="ht"></td>
-        <td class="ttc"></td>
-      </tr>
-    </tbody>
-  </table>
-  <button class="btn primary" onclick="ajouterLigne()">+ Ajouter une ligne</button>
-
-  <div class="section">
-    <label>Remise globale (€) : <input id="remise" type="number" value="0"></label>
-  </div>
-
-  <div id="totaux" style="margin-top: 1rem;"></div>
-
-  <div class="section">
-    <button class="btn secondary" onclick="imprimerPDF()">🖸️ Imprimer ou Enregistrer en PDF</button>
+  <div class="container">
+    <h2>Modifier les informations du devis</h2>
+    <div class="meta">
+      <div class="row">
+        <label>Numéro du devis :
+          <input type="text" id="numeroDevis" value="D-MAN-250622-002" />
+        </label>
+        <label>Date :
+          <input type="date" id="dateDevis" value="2025-06-22" />
+        </label>
+        <label>Objet :
+          <input type="text" id="objetDevis" value="Peinture intérieure salon" />
+        </label>
+        <label>Devise :
+          <input type="text" id="devise" value="EUR" />
+        </label>
+      </div>
+    </div>
+    <div id="nomClient"></div>
+    <table id="table-prestations">
+      <thead>
+        <tr>
+          <th>Prestation</th>
+          <th>Quantité</th>
+          <th>Unité</th>
+          <th>Prix Unitaire</th>
+          <th>TVA (%)</th>
+          <th>Total HT</th>
+          <th>Total TTC</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button class="add-btn" onclick="ajouterLigne()">+ Ajouter une ligne</button>
+    <div class="row" style="max-width:400px;">
+      <label>Remise globale (€) :
+        <input type="number" id="remise" value="0" onchange="recalculer()" />
+      </label>
+    </div>
+    <div class="totaux" id="totaux"></div>
+    <div class="actions">
+      <button class="download-btn" onclick="genererPDF()">⬇️ Télécharger le PDF</button>
+    </div>
   </div>
 
   <script>
-    function calculerTotaux() {
-      let totalHT = 0;
-      let totalTVA = 0;
-      document.querySelectorAll("#prestations tr").forEach(row => {
-        const qte = +row.children[1].children[0].value;
-        const prix = +row.children[3].children[0].value;
-        const tva = +row.children[4].children[0].value;
-        const ht = qte * prix;
-        const montantTVA = ht * (tva / 100);
-        const ttc = ht + montantTVA;
-        row.querySelector(".ht").innerText = ht.toFixed(2);
-        row.querySelector(".ttc").innerText = ttc.toFixed(2);
+    // -- DONNÉES DÉMO (remplacer si tu veux charger dynamiquement) --
+    let data = JSON.parse(decodeURIComponent(new URLSearchParams(window.location.search).get("data") || '{"nomduclient":"Jean Dupont","prestations":[{"typedeprestation":"Peinture","quantite":{"valeur":5,"unite":"m2"},"prixunitaire":50,"tauxtva":20}]}'));
+    document.getElementById("nomClient").textContent = `Client : ${data.nomduclient}`;
+    const tbody = document.querySelector("#table-prestations tbody");
+
+    // Ajout d'une ligne
+    function ajouterLigne(presta = { typedeprestation: '', quantite: { valeur: 1, unite: '' }, prixunitaire: 0, tauxtva: 20 }) {
+      const i = data.prestations.length;
+      data.prestations.push(presta);
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><input type="text" value="${presta.typedeprestation}" onchange="data.prestations[${i}].typedeprestation=this.value; recalculer()" /></td>
+        <td><input type="number" min="0" value="${presta.quantite.valeur}" onchange="data.prestations[${i}].quantite.valeur=parseFloat(this.value); recalculer()" /></td>
+        <td><input type="text" value="${presta.quantite.unite}" onchange="data.prestations[${i}].quantite.unite=this.value" /></td>
+        <td><input type="number" min="0" value="${presta.prixunitaire}" onchange="data.prestations[${i}].prixunitaire=parseFloat(this.value); recalculer()" /></td>
+        <td><input type="number" min="0" value="${presta.tauxtva}" onchange="data.prestations[${i}].tauxtva=parseFloat(this.value); recalculer()" /></td>
+        <td class="ht">0</td>
+        <td class="ttc">0</td>
+      `;
+      tbody.appendChild(row);
+      recalculer();
+    }
+
+    // Init: on remplit le tableau avec les lignes de data
+    data.prestations.forEach(ajouterLigne);
+
+    function recalculer() {
+      let totalHT = 0, totalTVA = 0;
+      tbody.querySelectorAll("tr").forEach((row, i) => {
+        const p = data.prestations[i];
+        const ht = p.prixunitaire * p.quantite.valeur;
+        const tva = ht * (p.tauxtva / 100);
+        const ttc = ht + tva;
         totalHT += ht;
-        totalTVA += montantTVA;
+        totalTVA += tva;
+        row.querySelector(".ht").textContent = ht.toFixed(2);
+        row.querySelector(".ttc").textContent = ttc.toFixed(2);
       });
-      const remise = +document.getElementById("remise").value;
+      const remise = parseFloat(document.getElementById("remise").value || 0);
       const sousTotal = totalHT - remise;
       const totalTTC = sousTotal + totalTVA;
       document.getElementById("totaux").innerHTML = `
-        <p>Total HT : €${totalHT.toFixed(2)}</p>
-        <p>Remise : €${remise.toFixed(2)}</p>
-        <p>Sous-total : €${sousTotal.toFixed(2)}</p>
-        <p>TVA : €${totalTVA.toFixed(2)}</p>
-        <p><strong>Total TTC : €${totalTTC.toFixed(2)}</strong></p>
+        Total HT : €${totalHT.toFixed(2)}<br>
+        Remise : €${remise.toFixed(2)}<br>
+        Sous-total : €${sousTotal.toFixed(2)}<br>
+        TVA : €${totalTVA.toFixed(2)}<br>
+        <strong>Total TTC : €${totalTTC.toFixed(2)}</strong>
       `;
     }
 
-    function ajouterLigne() {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><input></td>
-        <td><input type="number"></td>
-        <td><input></td>
-        <td><input type="number"></td>
-        <td><input type="number"></td>
-        <td class="ht"></td>
-        <td class="ttc"></td>
-      `;
-      document.getElementById("prestations").appendChild(tr);
+    function genererPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Titre
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text("Éditeur de Devis", 14, 16);
+
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Numéro du devis : ${document.getElementById("numeroDevis").value}`, 14, 28);
+      doc.text(`Date : ${document.getElementById("dateDevis").value}`, 95, 28);
+      doc.text(`Objet : ${document.getElementById("objetDevis").value}`, 14, 36);
+      doc.text(`Devise : ${document.getElementById("devise").value}`, 95, 36);
+      doc.text(`Client : ${data.nomduclient}`, 14, 44);
+
+      // Tableau
+      let startY = 54;
+      doc.autoTable({
+        startY: startY,
+        head: [['Prestation', 'Quantité', 'Unité', 'Prix Unitaire', 'TVA (%)', 'Total HT', 'Total TTC']],
+        body: data.prestations.map(p => [
+          p.typedeprestation, p.quantite.valeur, p.quantite.unite, p.prixunitaire, p.tauxtva,
+          (p.prixunitaire * p.quantite.valeur).toFixed(2),
+          (p.prixunitaire * p.quantite.valeur * (1 + p.tauxtva/100)).toFixed(2)
+        ]),
+        styles: { fontSize: 10, cellPadding: 2 },
+        theme: 'grid',
+        headStyles: { fillColor: [81, 70, 225] }
+      });
+
+      // Totaux
+      let y = doc.lastAutoTable ? doc.lastAutoTable.finalY + 8 : 70;
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text([
+        `Total HT : €${tbody.querySelectorAll(".ht").length ? Array.from(tbody.querySelectorAll(".ht")).reduce((a, c) => a + parseFloat(c.textContent), 0).toFixed(2) : "0.00"}`,
+        `Remise : €${(document.getElementById("remise").value || 0)}`,
+        `Sous-total : €${(Array.from(tbody.querySelectorAll(".ht")).reduce((a, c) => a + parseFloat(c.textContent), 0) - (parseFloat(document.getElementById("remise").value) || 0)).toFixed(2)}`,
+        `TVA : €${tbody.querySelectorAll(".ttc").length ? (Array.from(tbody.querySelectorAll(".ttc")).reduce((a, c, i) => a + (parseFloat(c.textContent) - parseFloat(tbody.querySelectorAll(".ht")[i].textContent)), 0)).toFixed(2) : "0.00"}`,
+        `Total TTC : €${tbody.querySelectorAll(".ttc").length ? Array.from(tbody.querySelectorAll(".ttc")).reduce((a, c) => a + parseFloat(c.textContent), 0).toFixed(2) : "0.00"}`
+      ], 14, y);
+
+      doc.save(`devis_${data.nomduclient.replace(/\s+/g, "_")}.pdf`);
     }
 
-    function imprimerPDF() {
-      window.print();
-    }
-
-    document.addEventListener("input", calculerTotaux);
-    window.onload = calculerTotaux;
+    // Recalculer au cas où
+    recalculer();
   </script>
 </body>
 </html>
-
