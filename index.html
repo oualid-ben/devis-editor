@@ -29,7 +29,8 @@
     #totaux strong{font-size:1.15rem}
     .download-btn{background:#20b05b;color:#fff;font-weight:600;font-size:1.05rem;padding:15px 34px;border:none;border-radius:7px;box-shadow:0 2px 10px #1fa2722b;margin-top:26px;cursor:pointer}
     .download-btn:hover{background:#17924b}
-    .flex{display:flex;align-items:center;gap:10px;margin:14px 0}
+    .flex{display:flex;align-items:flex-end;gap:16px;margin:14px 0}
+    .flex label{margin:0}
   </style>
 </head>
 <body>
@@ -78,7 +79,7 @@
   <!-- REMISE GLOBALE -->
   <div class="flex">
     <label>Remise globale (€) :<input type="number" id="remise" value="0" oninput="recalculer()"></label>
-    <label style="flex:none"><input type="checkbox" id="applyRemise" checked onchange="recalculer()"> Appliquer</label>
+    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="applyRemise" checked onchange="recalculer()"> Appliquer</label>
   </div>
 
   <div id="totaux"></div>
@@ -123,85 +124,67 @@
     render();
   }
 
-  function recalculer() {
+  function calculs() {
     let totalHT = 0, totalTVA = 0;
-    tbody.querySelectorAll('tr').forEach((tr, i) => {
-      const p = data.prestations[i];
+    data.prestations.forEach(p => {
       const ht = p.prixunitaire * p.quantite.valeur;
       const tva = ht * (p.tauxtva / 100);
-      const ttc = ht + tva;
       totalHT += ht; totalTVA += tva;
-      tr.querySelector('.ht').textContent = ht.toFixed(2);
-      tr.querySelector('.ttc').textContent = ttc.toFixed(2);
     });
     const remise = applyRemise.checked ? (parseFloat(remiseInput.value) || 0) : 0;
     const sousTotal = totalHT - remise;
     const totalTTC = sousTotal + totalTVA;
-    document.getElementById('totaux').innerHTML = `Total HT : €${totalHT.toFixed(2)}<br>Remise : €${remise.toFixed(2)}<br>Sous-total : €${sousTotal.toFixed(2)}<br>TVA : €${totalTVA.toFixed(2)}<br><strong>Total TTC : €${totalTTC.toFixed(2)}</strong>`;
+    return { totalHT, totalTVA, remise, sousTotal, totalTTC };
+  }
+
+  function recalculer() {
+    tbody.querySelectorAll('tr').forEach((tr, i) => {
+      const p = data.prestations[i];
+      const ht = p.prixunitaire * p.quantite.valeur;
+      const ttc = ht * (1 + p.tauxtva / 100);
+      tr.querySelector('.ht').textContent = ht.toFixed(2);
+      tr.querySelector('.ttc').textContent = ttc.toFixed(2);
+    });
+
+    const { totalHT, totalTVA, remise, sousTotal, totalTTC } = calculs();
+
+    document.getElementById('totaux').innerHTML = `Total HT : €${totalHT.toFixed(2)}<br>`+
+      (remise>0 ? `Remise : €${remise.toFixed(2)}<br>` : '')+
+      `Sous-total : €${sousTotal.toFixed(2)}<br>TVA : €${totalTVA.toFixed(2)}<br><strong>Total TTC : €${totalTTC.toFixed(2)}</strong>`;
   }
 
   function genererPDF() {
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-
-    // ARTISAN & CLIENT HEADER --------------------------------------------------
+    const { jsPDF } = window.jspdf; const doc = new jsPDF({ unit:'pt', format:'a4' });
+    // header title
     doc.setFontSize(18).text('Devis', 40, 40);
     doc.setFontSize(11);
+    // artisan
+    const art = [document.getElementById('artisanNom').value, document.getElementById('artisanAdresse').value,
+      `Téléphone : ${document.getElementById('artisanTel').value}`, `Email : ${document.getElementById('artisanEmail').value}`];
+    art.forEach((l,i)=>doc.text(l,40,70+i*14));
+    // client right
+    const cliX=340;
+    const cli=[document.getElementById('clientNom').value, document.getElementById('clientAdresse').value];
+    doc.text('Client :', cliX, 70);
+    cli.forEach((l,i)=>doc.text(l,cliX,84+i*14));
+    let metaY=70+Math.max(art.length,cli.length+1)*14+16;
+    doc.text(`Numéro : ${document.getElementById('numeroDevis').value}`,40,metaY);
+    doc.text(`Date : ${document.getElementById('dateDevis').value}`,240,metaY);
+    doc.text(`Objet : ${document.getElementById('objetDevis').value}`,40,metaY+24);
+    // table
+    const body=data.prestations.map(p=>[p.typedeprestation,p.quantite.valeur,p.quantite.unite,p.prixunitaire,p.tauxtva,(p.prixunitaire*p.quantite.valeur).toFixed(2),(p.prixunitaire*p.quantite.valeur*(1+p.tauxtva/100)).toFixed(2)]);
+    doc.autoTable({startY:metaY+44,head:[['Prestation','Qté','U','PU','TVA %','HT','TTC']],body,styles:{halign:'center',fontSize:9},headStyles:{fillColor:[24,90,160],textColor:255,fontStyle:'bold'}});
+    const finY=doc.lastAutoTable.finalY||metaY+64;
+    const { totalHT,totalTVA,remise,sousTotal,totalTTC }=calculs();
+    const lines=[`Total HT : €${totalHT.toFixed(2)}`];
+    if(remise>0) lines.push(`Remise : €${remise.toFixed(2)}`);
+    lines.push(`Sous-total : €${sousTotal.toFixed(2)}`,`TVA : €${totalTVA.toFixed(2)}`,`Total TTC : €${totalTTC.toFixed(2)}`);
+    doc.text(lines,40,finY+28);
 
-    // Left column (artisan)
-    const artisanLines = [
-      document.getElementById('artisanNom').value,
-      document.getElementById('artisanAdresse').value,
-      `Téléphone : ${document.getElementById('artisanTel').value}`,
-      `Email : ${document.getElementById('artisanEmail').value}`
-    ];
-    artisanLines.forEach((l, idx) => doc.text(l, 40, 70 + idx * 14));
-
-    // Right column (client)
-    const clientX = 340;
-    const clientLines = [
-      'Client :',
-      document.getElementById('clientNom').value,
-      document.getElementById('clientAdresse').value
-    ];
-    clientLines.forEach((l, idx) => doc.text(l, clientX, 70 + idx * 14));
-
-    // Meta (num/date) under artisan block
-    const metaY = 70 + Math.max(artisanLines.length, clientLines.length) * 14 + 16;
-    doc.text(`Numéro : ${document.getElementById('numeroDevis').value}`, 40, metaY);
-    doc.text(`Date : ${document.getElementById('dateDevis').value}`, 240, metaY);
-
-    // Objet just before table
-    doc.text(`Objet : ${document.getElementById('objetDevis').value}`, 40, metaY + 24);
-
-    // TABLE --------------------------------------------------------------------
-    const body = data.prestations.map(p => [
-      p.typedeprestation,
-      p.quantite.valeur,
-      p.quantite.unite,
-      p.prixunitaire,
-      p.tauxtva,
-      (p.quantite.valeur * p.prixunitaire).toFixed(2),
-      (p.quantite.valeur * p.prixunitaire * (1 + p.tauxtva / 100)).toFixed(2)
-    ]);
-
-    doc.autoTable({
-      startY: metaY + 44,
-      head: [['Prestation', 'Qté', 'U', 'PU', 'TVA %', 'HT', 'TTC']],
-      body,
-      styles: { halign: 'center', fontSize: 9 },
-      headStyles: { fillColor: [24, 90, 160], textColor: 255, fontStyle: 'bold' }
-    });
-
-    // Totaux block
-    const finalY = doc.lastAutoTable.finalY || metaY + 64;
-    doc.setFontSize(11);
-    doc.text(document.getElementById('totaux').innerText.split('\n'), 40, finalY + 28);
-
-    doc.save(`devis_${document.getElementById('clientNom').value.replace(/\s+/g, '_')}.pdf`);
+    doc.save(`devis_${document.getElementById('clientNom').value.replace(/\s+/g,'_')}.pdf`);
   }
 
-  // INIT ----------------------------------------------------------------------
-  document.getElementById('clientNom').value = data.nomduclient || '';
+  document.getElementById('clientNom').value=data.nomduclient||'';
   render();
 </script>
 </body>
