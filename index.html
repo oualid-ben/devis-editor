@@ -11,10 +11,26 @@
     input { width: 100%; box-sizing: border-box; }
     button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
     #totaux { margin-top: 30px; font-weight: bold; }
+    .meta-info { margin-bottom: 20px; }
+    .meta-info label { display: inline-block; margin-right: 20px; }
   </style>
 </head>
 <body>
   <h2>Modifier les informations du devis</h2>
+
+  <div class="meta-info">
+    <label>Numéro du devis :
+      <input type="text" id="numeroDevis" value="D-MAN-250622-002">
+    </label>
+    <label>Date :
+      <input type="date" id="dateDevis" value="2025-06-22">
+    </label>
+    <label>Objet :
+      <input type="text" id="objetDevis" value="Peinture intérieure salon">
+    </label>
+    <p><strong>Devise : EUR</strong></p>
+  </div>
+
   <div id="nomClient"></div>
   <table id="table-prestations">
     <thead>
@@ -92,15 +108,21 @@
     }
 
     function envoyer() {
+      data.numeroDevis = document.getElementById("numeroDevis").value;
+      data.dateDevis = document.getElementById("dateDevis").value;
+      data.objetDevis = document.getElementById("objetDevis").value;
+      data.remiseGlobale = parseFloat(document.getElementById("remise").value || 0);
+
       fetch("https://ton-webhook-n8n.com/webhook-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-        .then(res => res.ok ? alert("✅ Données envoyées, PDF en cours de génération...") : alert("❌ Erreur lors de l'envoi"))
-        .catch(() => alert("❌ Erreur réseau"));
+      .then(res => res.ok ? alert("✅ Données envoyées, PDF en cours de génération...") : alert("❌ Erreur lors de l'envoi"))
+      .catch(() => alert("❌ Erreur réseau"));
     }
   </script>
 </body>
 </html>
+
 
