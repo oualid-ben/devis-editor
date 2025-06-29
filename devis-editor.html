@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Modifier le devis</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f0f0f0; }
+    input { width: 100%; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>Modifier les informations du devis</h2>
+  <div id="nomClient"></div>
+  <table id="table-prestations">
+    <thead>
+      <tr>
+        <th>Prestation</th>
+        <th>Quantité</th>
+        <th>Unité</th>
+        <th>Prix Unitaire</th>
+        <th>TVA (%)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button onclick="envoyer()">✅ Générer mon PDF</button>
+
+  <script>
+    const data = JSON.parse(decodeURIComponent(new URLSearchParams(window.location.search).get("data")));
+
+    document.getElementById("nomClient").textContent = `Client : ${data.nomduclient}`;
+
+    const tbody = document.querySelector("#table-prestations tbody");
+
+    data.prestations.forEach((presta, i) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${presta.typedeprestation}</td>
+        <td>${presta.quantite.valeur}</td>
+        <td>${presta.quantite.unite}</td>
+        <td><input type="text" value="${presta.prixunitaire}" onchange="data.prestations[${i}].prixunitaire=this.value" /></td>
+        <td><input type="text" value="${presta.tauxtva}" onchange="data.prestations[${i}].tauxtva=this.value" /></td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    function envoyer() {
+      fetch("https://ton-webhook-n8n.com/webhook-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      .then(res => res.ok ? alert("✅ Données envoyées, PDF en cours de génération...") : alert("❌ Erreur lors de l'envoi"))
+      .catch(() => alert("❌ Erreur réseau"));
+    }
+  </script>
+</body>
+</html>
