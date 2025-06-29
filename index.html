@@ -573,62 +573,209 @@
       const { jsPDF } = window.jspdf; 
       const doc = new jsPDF({ unit:'pt', format:'a4' });
       
-      // Header title
-      doc.setFontSize(18).text('Devis', 40, 40);
+      // Couleurs modernes
+      const primaryColor = [102, 126, 234];
+      const secondaryColor = [118, 75, 162];
+      const accentColor = [16, 185, 129];
+      const darkGray = [30, 41, 59];
+      const lightGray = [148, 163, 184];
+      
+      // Header avec fond dégradé simulé
+      doc.setFillColor(...primaryColor);
+      doc.rect(0, 0, 595, 80, 'F');
+      
+      // Titre principal
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(28);
+      doc.setFont('helvetica', 'bold');
+      doc.text('DEVIS', 40, 45);
+      
+      // Numéro de devis en haut à droite
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      const numeroDevis = document.getElementById('numeroDevis').value;
+      doc.text(`N° ${numeroDevis}`, 595 - 40 - doc.getTextWidth(`N° ${numeroDevis}`), 35);
+      
+      // Date en haut à droite
+      const dateDevis = document.getElementById('dateDevis').value;
+      doc.text(`Date: ${dateDevis}`, 595 - 40 - doc.getTextWidth(`Date: ${dateDevis}`), 55);
+      
+      // Reset couleur texte
+      doc.setTextColor(...darkGray);
+      
+      // Section Entreprise avec fond coloré
+      doc.setFillColor(250, 251, 255);
+      doc.rect(40, 100, 250, 80, 'F');
+      doc.setDrawColor(...lightGray);
+      doc.rect(40, 100, 250, 80, 'D');
+      
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text('ENTREPRISE', 50, 120);
+      
       doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...darkGray);
       
-      // Artisan info
-      const art = [
-        document.getElementById('artisanNom').value, 
+      const artisanInfo = [
+        document.getElementById('artisanNom').value,
         document.getElementById('artisanAdresse').value,
-        `Téléphone : ${document.getElementById('artisanTel').value}`, 
-        `Email : ${document.getElementById('artisanEmail').value}`
+        document.getElementById('artisanTel').value,
+        document.getElementById('artisanEmail').value
       ];
-      art.forEach((l,i) => doc.text(l, 40, 70 + i * 14));
       
-      // Client info (right side)
-      const cliX = 340;
-      const cli = [document.getElementById('clientNom').value, document.getElementById('clientAdresse').value];
-      doc.text('Client :', cliX, 70);
-      cli.forEach((l,i) => doc.text(l, cliX, 84 + i * 14));
+      artisanInfo.forEach((info, i) => {
+        if (info) doc.text(info, 50, 140 + i * 12);
+      });
       
-      let metaY = 70 + Math.max(art.length, cli.length + 1) * 14 + 16;
-      doc.text(`Numéro : ${document.getElementById('numeroDevis').value}`, 40, metaY);
-      doc.text(`Date : ${document.getElementById('dateDevis').value}`, 240, metaY);
-      doc.text(`Objet : ${document.getElementById('objetDevis').value}`, 40, metaY + 24);
+      // Section Client avec fond coloré
+      doc.setFillColor(250, 255, 250);
+      doc.rect(305, 100, 250, 80, 'F');
+      doc.setDrawColor(...lightGray);
+      doc.rect(305, 100, 250, 80, 'D');
       
-      // Prestations table
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...accentColor);
+      doc.text('CLIENT', 315, 120);
+      
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...darkGray);
+      
+      const clientInfo = [
+        document.getElementById('clientNom').value,
+        document.getElementById('clientAdresse').value
+      ];
+      
+      clientInfo.forEach((info, i) => {
+        if (info) doc.text(info, 315, 140 + i * 12);
+      });
+      
+      // Objet du devis
+      let currentY = 200;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text('OBJET:', 40, currentY);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...darkGray);
+      const objet = document.getElementById('objetDevis').value;
+      doc.text(objet, 85, currentY);
+      
+      // Tableau des prestations avec style moderne
+      const tableStartY = currentY + 30;
+      
       const body = data.prestations.map(p => [
-        p.typedeprestation,
-        p.quantite.valeur,
-        p.quantite.unite,
-        p.prixunitaire,
-        p.tauxtva,
-        (p.prixunitaire * p.quantite.valeur).toFixed(2),
-        (p.prixunitaire * p.quantite.valeur * (1 + p.tauxtva / 100)).toFixed(2)
+        p.typedeprestation || '',
+        p.quantite?.valeur?.toString() || '0',
+        p.quantite?.unite || '',
+        `${p.prixunitaire || 0} €`,
+        `${p.tauxtva || 0}%`,
+        `${(p.prixunitaire * p.quantite.valeur).toFixed(2)} €`,
+        `${(p.prixunitaire * p.quantite.valeur * (1 + p.tauxtva / 100)).toFixed(2)} €`
       ]);
       
       doc.autoTable({
-        startY: metaY + 44,
-        head: [['Prestation','Qté','U','PU','TVA %','HT','TTC']],
-        body,
-        styles: { halign:'center', fontSize:9 },
-        headStyles: { fillColor:[102, 126, 234], textColor:255, fontStyle:'bold' }
+        startY: tableStartY,
+        head: [['Prestation', 'Qté', 'Unité', 'P.U.', 'TVA', 'Total HT', 'Total TTC']],
+        body: body,
+        styles: {
+          fontSize: 10,
+          cellPadding: 8,
+          textColor: darkGray,
+          lineColor: [226, 232, 240],
+          lineWidth: 0.5
+        },
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        columnStyles: {
+          0: { halign: 'left', cellWidth: 120 },
+          1: { halign: 'center', cellWidth: 40 },
+          2: { halign: 'center', cellWidth: 40 },
+          3: { halign: 'right', cellWidth: 60 },
+          4: { halign: 'center', cellWidth: 40 },
+          5: { halign: 'right', cellWidth: 70 },
+          6: { halign: 'right', cellWidth: 70 }
+        }
       });
       
-      const finY = doc.lastAutoTable.finalY || metaY + 64;
+      // Calculs et totaux avec style moderne
+      const finY = doc.lastAutoTable.finalY + 20;
       const { totalHT, totalTVA, remise, sousTotal, totalTTC } = calculs();
       
-      const lines = [`Total HT : €${totalHT.toFixed(2)}`];
-      if (remise > 0) lines.push(`Remise : €${remise.toFixed(2)}`);
-      lines.push(
-        `Sous-total : €${sousTotal.toFixed(2)}`,
-        `TVA : €${totalTVA.toFixed(2)}`,
-        `Total TTC : €${totalTTC.toFixed(2)}`
-      );
+      // Cadre pour les totaux
+      const totalsBoxY = finY;
+      const totalsBoxHeight = remise > 0 ? 100 : 80;
       
-      doc.text(lines, 40, finY + 28);
-      doc.save(`devis_${document.getElementById('clientNom').value.replace(/\s+/g,'_')}.pdf`);
+      doc.setFillColor(248, 250, 252);
+      doc.rect(350, totalsBoxY, 205, totalsBoxHeight, 'F');
+      doc.setDrawColor(...lightGray);
+      doc.rect(350, totalsBoxY, 205, totalsBoxHeight, 'D');
+      
+      // Totaux
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...darkGray);
+      
+      let totalsY = totalsBoxY + 20;
+      
+      // Total HT
+      doc.text('Total HT:', 360, totalsY);
+      doc.text(`${totalHT.toFixed(2)} €`, 540, totalsY);
+      
+      // Remise si applicable
+      if (remise > 0) {
+        totalsY += 15;
+        doc.setTextColor(239, 68, 68);
+        doc.text('Remise:', 360, totalsY);
+        doc.text(`-${remise.toFixed(2)} €`, 540, totalsY);
+        doc.setTextColor(...darkGray);
+        
+        totalsY += 15;
+        doc.text('Sous-total:', 360, totalsY);
+        doc.text(`${sousTotal.toFixed(2)} €`, 540, totalsY);
+      }
+      
+      // TVA
+      totalsY += 15;
+      doc.text('TVA:', 360, totalsY);
+      doc.text(`${totalTVA.toFixed(2)} €`, 540, totalsY);
+      
+      // Total TTC - mis en évidence
+      totalsY += 20;
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text('TOTAL TTC:', 360, totalsY);
+      doc.text(`${totalTTC.toFixed(2)} €`, 540, totalsY);
+      
+      // Pied de page moderne
+      const footerY = 750;
+      doc.setFillColor(...primaryColor);
+      doc.rect(0, footerY, 595, 50, 'F');
+      
+      doc.setFontSize(10);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Devis généré automatiquement - Valable 30 jours', 40, footerY + 20);
+      
+      const date = new Date().toLocaleDateString('fr-FR');
+      const footerText = `Généré le ${date}`;
+      doc.text(footerText, 595 - 40 - doc.getTextWidth(footerText), footerY + 20);
+      
+      // Sauvegarde
+      const clientNom = document.getElementById('clientNom').value.replace(/\s+/g, '_') || 'Client';
+      doc.save(`Devis_${clientNom}_${numeroDevis}.pdf`);
     }
 
     // Initialize
