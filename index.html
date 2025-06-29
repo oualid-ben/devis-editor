@@ -14,6 +14,7 @@
     .meta-info { margin-bottom: 20px; }
     .meta-info label { display: inline-block; margin-right: 20px; }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
   <h2>Modifier les informations du devis</h2>
@@ -55,6 +56,7 @@
   <div id="totaux"></div>
 
   <button onclick="envoyer()">✅ Générer mon PDF</button>
+  <button onclick="telechargerPDF()">📄 Télécharger le PDF</button>
 
   <script>
     let data = JSON.parse(decodeURIComponent(new URLSearchParams(window.location.search).get("data")));
@@ -120,6 +122,21 @@
       })
       .then(res => res.ok ? alert("✅ Données envoyées, PDF en cours de génération...") : alert("❌ Erreur lors de l'envoi"))
       .catch(() => alert("❌ Erreur réseau"));
+    }
+
+    function telechargerPDF() {
+      const element = document.body.cloneNode(true);
+      element.querySelectorAll("button").forEach(btn => btn.remove());
+
+      const opt = {
+        margin: 0.5,
+        filename: `devis_${data.nomduclient.replace(/\s+/g, "_")}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
     }
   </script>
 </body>
