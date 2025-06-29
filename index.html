@@ -2,14 +2,15 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Modifier le devis</title>
+  <title>Éditeur de Devis</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background-color: #f0f0f0; }
-    input { width: 100%; }
+    input { width: 100%; box-sizing: border-box; }
     button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    #totaux { margin-top: 30px; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -23,31 +24,72 @@
         <th>Unité</th>
         <th>Prix Unitaire</th>
         <th>TVA (%)</th>
+        <th>Total HT</th>
+        <th>Total TTC</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
+  <button onclick="ajouterLigne()">➕ Ajouter une ligne</button>
+  <div style="margin-top:20px;">
+    Remise globale (€) : <input type="number" id="remise" value="0" onchange="recalculer()" />
+  </div>
+
+  <div id="totaux"></div>
+
   <button onclick="envoyer()">✅ Générer mon PDF</button>
 
   <script>
-    const data = JSON.parse(decodeURIComponent(new URLSearchParams(window.location.search).get("data")));
-
+    let data = JSON.parse(decodeURIComponent(new URLSearchParams(window.location.search).get("data")));
     document.getElementById("nomClient").textContent = `Client : ${data.nomduclient}`;
 
     const tbody = document.querySelector("#table-prestations tbody");
 
-    data.prestations.forEach((presta, i) => {
+    function ajouterLigne(presta = { typedeprestation: '', quantite: { valeur: 1, unite: '' }, prixunitaire: 0, tauxtva: 20 }) {
+      const i = data.prestations.length;
+      data.prestations.push(presta);
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td><input type="text" value="${presta.typedeprestation}" onchange="data.prestations[${i}].typedeprestation=this.value" /></td>
-        <td><input type="number" value="${presta.quantite.valeur}" onchange="data.prestations[${i}].quantite.valeur=this.value" /></td>
+        <td><input type="text" value="${presta.typedeprestation}" onchange="data.prestations[${i}].typedeprestation=this.value; recalculer()" /></td>
+        <td><input type="number" value="${presta.quantite.valeur}" onchange="data.prestations[${i}].quantite.valeur=parseFloat(this.value); recalculer()" /></td>
         <td><input type="text" value="${presta.quantite.unite}" onchange="data.prestations[${i}].quantite.unite=this.value" /></td>
-        <td><input type="number" value="${presta.prixunitaire}" onchange="data.prestations[${i}].prixunitaire=this.value" /></td>
-        <td><input type="number" value="${presta.tauxtva}" onchange="data.prestations[${i}].tauxtva=this.value" /></td>
+        <td><input type="number" value="${presta.prixunitaire}" onchange="data.prestations[${i}].prixunitaire=parseFloat(this.value); recalculer()" /></td>
+        <td><input type="number" value="${presta.tauxtva}" onchange="data.prestations[${i}].tauxtva=parseFloat(this.value); recalculer()" /></td>
+        <td class="ht">0</td>
+        <td class="ttc">0</td>
       `;
       tbody.appendChild(row);
-    });
+      recalculer();
+    }
+
+    data.prestations.forEach(ajouterLigne);
+
+    function recalculer() {
+      let totalHT = 0;
+      let totalTVA = 0;
+      tbody.querySelectorAll("tr").forEach((row, i) => {
+        const p = data.prestations[i];
+        const ht = p.prixunitaire * p.quantite.valeur;
+        const tva = ht * (p.tauxtva / 100);
+        const ttc = ht + tva;
+        totalHT += ht;
+        totalTVA += tva;
+        row.querySelector(".ht").textContent = ht.toFixed(2);
+        row.querySelector(".ttc").textContent = ttc.toFixed(2);
+      });
+      const remise = parseFloat(document.getElementById("remise").value || 0);
+      const sousTotal = totalHT - remise;
+      const totalTTC = sousTotal + totalTVA;
+
+      document.getElementById("totaux").innerHTML = `
+        Total HT : €${totalHT.toFixed(2)}<br>
+        Remise : €${remise.toFixed(2)}<br>
+        Sous-total : €${sousTotal.toFixed(2)}<br>
+        TVA : €${totalTVA.toFixed(2)}<br>
+        <strong>Total TTC : €${totalTTC.toFixed(2)}</strong>
+      `;
+    }
 
     function envoyer() {
       fetch("https://ton-webhook-n8n.com/webhook-url", {
@@ -55,9 +97,10 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      .then(res => res.ok ? alert("✅ Données envoyées, PDF en cours de génération...") : alert("❌ Erreur lors de l'envoi"))
-      .catch(() => alert("❌ Erreur réseau"));
+        .then(res => res.ok ? alert("✅ Données envoyées, PDF en cours de génération...") : alert("❌ Erreur lors de l'envoi"))
+        .catch(() => alert("❌ Erreur réseau"));
     }
   </script>
 </body>
 </html>
+
