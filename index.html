@@ -1,71 +1,106 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Éditeur de Devis</title>
-    <style>
-        body { font-family: sans-serif; background: #f8f9fc; padding: 2rem; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white; border-radius: 0.5rem; overflow: hidden; }
-        th, td { border: 1px solid #ddd; padding: 0.75rem; text-align: left; }
-        input { padding: 0.5rem; border-radius: 0.25rem; border: 1px solid #ccc; width: 100%; }
-        .actions { margin-top: 1rem; display: flex; gap: 1rem; }
-        .actions button { padding: 0.75rem 1rem; border: none; border-radius: 0.5rem; cursor: pointer; }
-        .generate { background: #4caf50; color: white; }
-        .download { background: #3b82f6; color: white; }
-        .no-print { display: inline-block; }
-        @media print {
-            .no-print { display: none; }
-            body { zoom: 75%; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Éditeur de Devis</title>
+  <style>
+    body { font-family: sans-serif; background: #f8f9fc; padding: 2rem; }
+    input { padding: 0.5rem; border-radius: 0.25rem; border: 1px solid #ccc; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white; border-radius: 0.5rem; overflow: hidden; }
+    th, td { border: 1px solid #ddd; padding: 0.75rem; text-align: left; }
+    .section { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .btn { padding: 0.5rem 1rem; border: none; border-radius: 5px; cursor: pointer; }
+    .primary { background: #4f46e5; color: white; }
+    .secondary { background: #e0e7ff; color: #1e1b4b; }
+  </style>
 </head>
 <body>
+  <h2>Modifier les informations du devis</h2>
+  <div class="section">
+    <div><label>Numéro du devis : <input id="numDevis" value="D-MAN-250622-002"></label></div>
+    <div><label>Date : <input type="date" id="date" value="2025-06-22"></label></div>
+    <div><label>Objet : <input id="objet" value="Peinture intérieure salon"></label></div>
+    <div><label>Devise : <input id="devise" value="EUR"></label></div>
+  </div>
+  <div><strong>Client : </strong><span id="client">Jean Dupont</span></div>
 
-<h1>Modifier les informations du devis</h1>
-<table>
+  <table id="devisTable">
     <thead>
-        <tr>
-            <th>Prestation</th>
-            <th>Quantité</th>
-            <th>Unité</th>
-            <th>Prix Unitaire</th>
-            <th>TVA (%)</th>
-            <th>Total HT</th>
-            <th>Total TTC</th>
-        </tr>
+      <tr><th>Prestation</th><th>Quantité</th><th>Unité</th><th>Prix Unitaire</th><th>TVA (%)</th><th>Total HT</th><th>Total TTC</th></tr>
     </thead>
-    <tbody id="prestation-table">
-        <tr>
-            <td><input value="Peinture" /></td>
-            <td><input type="number" value="5" class="quantite" /></td>
-            <td><input value="m2" /></td>
-            <td><input type="number" value="50" class="prix" /></td>
-            <td><input type="number" value="20" class="tva" /></td>
-            <td class="total-ht">250.00</td>
-            <td class="total-ttc">300.00</td>
-        </tr>
+    <tbody id="prestations">
+      <tr>
+        <td><input value="Peinture"></td>
+        <td><input type="number" value="5"></td>
+        <td><input value="m2"></td>
+        <td><input type="number" value="50"></td>
+        <td><input type="number" value="20"></td>
+        <td class="ht"></td>
+        <td class="ttc"></td>
+      </tr>
     </tbody>
-</table>
+  </table>
+  <button class="btn primary" onclick="ajouterLigne()">+ Ajouter une ligne</button>
 
-<div class="actions no-print">
-    <button class="generate" onclick="window.print()">🖨️ Imprimer ou Enregistrer en PDF</button>
-    <button class="download" disabled style="opacity:0.5;cursor:not-allowed">🚧 Générer le PDF (bientôt)</button>
-</div>
+  <div class="section">
+    <label>Remise globale (€) : <input id="remise" type="number" value="0"></label>
+  </div>
 
-<script>
-    function recalculer() {
-        document.querySelectorAll("#prestation-table tr").forEach(row => {
-            const quantite = parseFloat(row.querySelector(".quantite").value) || 0;
-            const prix = parseFloat(row.querySelector(".prix").value) || 0;
-            const tva = parseFloat(row.querySelector(".tva").value) || 0;
-            const totalHT = quantite * prix;
-            const totalTTC = totalHT * (1 + tva / 100);
-            row.querySelector(".total-ht").textContent = totalHT.toFixed(2);
-            row.querySelector(".total-ttc").textContent = totalTTC.toFixed(2);
-        });
+  <div id="totaux" style="margin-top: 1rem;"></div>
+
+  <div class="section">
+    <button class="btn secondary" onclick="imprimerPDF()">🖸️ Imprimer ou Enregistrer en PDF</button>
+  </div>
+
+  <script>
+    function calculerTotaux() {
+      let totalHT = 0;
+      let totalTVA = 0;
+      document.querySelectorAll("#prestations tr").forEach(row => {
+        const qte = +row.children[1].children[0].value;
+        const prix = +row.children[3].children[0].value;
+        const tva = +row.children[4].children[0].value;
+        const ht = qte * prix;
+        const montantTVA = ht * (tva / 100);
+        const ttc = ht + montantTVA;
+        row.querySelector(".ht").innerText = ht.toFixed(2);
+        row.querySelector(".ttc").innerText = ttc.toFixed(2);
+        totalHT += ht;
+        totalTVA += montantTVA;
+      });
+      const remise = +document.getElementById("remise").value;
+      const sousTotal = totalHT - remise;
+      const totalTTC = sousTotal + totalTVA;
+      document.getElementById("totaux").innerHTML = `
+        <p>Total HT : €${totalHT.toFixed(2)}</p>
+        <p>Remise : €${remise.toFixed(2)}</p>
+        <p>Sous-total : €${sousTotal.toFixed(2)}</p>
+        <p>TVA : €${totalTVA.toFixed(2)}</p>
+        <p><strong>Total TTC : €${totalTTC.toFixed(2)}</strong></p>
+      `;
     }
-    document.querySelectorAll("input").forEach(input => input.addEventListener("input", recalculer));
-</script>
 
+    function ajouterLigne() {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input></td>
+        <td><input type="number"></td>
+        <td><input></td>
+        <td><input type="number"></td>
+        <td><input type="number"></td>
+        <td class="ht"></td>
+        <td class="ttc"></td>
+      `;
+      document.getElementById("prestations").appendChild(tr);
+    }
+
+    function imprimerPDF() {
+      window.print();
+    }
+
+    document.addEventListener("input", calculerTotaux);
+    window.onload = calculerTotaux;
+  </script>
 </body>
 </html>
+
