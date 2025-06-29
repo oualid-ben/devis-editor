@@ -40,11 +40,11 @@
     data.prestations.forEach((presta, i) => {
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${presta.typedeprestation}</td>
-        <td>${presta.quantite.valeur}</td>
-        <td>${presta.quantite.unite}</td>
-        <td><input type="text" value="${presta.prixunitaire}" onchange="data.prestations[${i}].prixunitaire=this.value" /></td>
-        <td><input type="text" value="${presta.tauxtva}" onchange="data.prestations[${i}].tauxtva=this.value" /></td>
+        <td><input type="text" value="${presta.typedeprestation}" onchange="data.prestations[${i}].typedeprestation=this.value" /></td>
+        <td><input type="number" value="${presta.quantite.valeur}" onchange="data.prestations[${i}].quantite.valeur=this.value" /></td>
+        <td><input type="text" value="${presta.quantite.unite}" onchange="data.prestations[${i}].quantite.unite=this.value" /></td>
+        <td><input type="number" value="${presta.prixunitaire}" onchange="data.prestations[${i}].prixunitaire=this.value" /></td>
+        <td><input type="number" value="${presta.tauxtva}" onchange="data.prestations[${i}].tauxtva=this.value" /></td>
       `;
       tbody.appendChild(row);
     });
