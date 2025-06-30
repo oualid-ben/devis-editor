@@ -96,12 +96,6 @@
       gap: 24px;
     }
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-    }
-
     .form-group {
       position: relative;
     }
@@ -127,8 +121,9 @@
     }
 
     .form-group textarea {
+      min-height: 100px;
       resize: vertical;
-      min-height: 80px;
+      font-family: inherit;
     }
 
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
@@ -138,13 +133,8 @@
       background: rgba(255, 255, 255, 1);
     }
 
-    .form-group input:focus + label, .form-group select:focus + label {
+    .form-group input:focus + label, .form-group select:focus + label, .form-group textarea:focus + label {
       color: #667eea;
-    }
-
-    .required::after {
-      content: ' *';
-      color: #ef4444;
     }
 
     .table-container {
@@ -230,7 +220,7 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #667eaa, #764ba2);
+      background: linear-gradient(135deg, #667eea, #764ba2);
       color: white;
       padding: 16px 32px;
       box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
@@ -336,65 +326,8 @@
       margin-top: 48px;
     }
 
-    .warning-banner {
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
-      color: white;
-      padding: 16px 24px;
-      border-radius: 12px;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 500;
-    }
-
-    .compliance-section {
-      background: rgba(16, 185, 129, 0.1);
-      border: 2px solid rgba(16, 185, 129, 0.2);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 32px;
-    }
-
-    .compliance-title {
-      color: #059669;
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .checkbox-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 12px;
-    }
-
-    .checkbox-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px;
-      border-radius: 8px;
-      transition: background 0.2s ease;
-    }
-
-    .checkbox-item:hover {
-      background: rgba(16, 185, 129, 0.05);
-    }
-
-    .checkbox-item input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: #10b981;
-    }
-
-    .checkbox-item label {
-      font-size: 0.9rem;
-      color: #374151;
-      cursor: pointer;
+    .full-width {
+      grid-column: 1 / -1;
     }
 
     @media (max-width: 768px) {
@@ -434,17 +367,7 @@
   <div class="container">
     <div class="header">
       <h1>✨ Éditeur de Devis</h1>
-      <p>Créez des devis professionnels conformes aux obligations légales</p>
-    </div>
-
-    <!-- VÉRIFICATION CONFORMITÉ -->
-    <div class="compliance-section">
-      <div class="compliance-title">
-        ✅ Vérification de conformité légale
-      </div>
-      <div class="checkbox-list" id="compliance-checklist">
-        <!-- Les éléments de conformité seront générés dynamiquement -->
-      </div>
+      <p>Créez des devis professionnels en quelques clics</p>
     </div>
 
     <!-- MÉTA DEVIS -->
@@ -452,32 +375,20 @@
       <h3 class="section-title">📋 Informations du devis</h3>
       <div class="grid">
         <div class="form-group">
-          <label class="required">Numéro du devis</label>
-          <input id="numeroDevis" value="D-MAN-250622-002" required>
+          <label>Numéro du devis</label>
+          <input id="numeroDevis" value="D-MAN-250622-002">
         </div>
         <div class="form-group">
-          <label class="required">Date</label>
-          <input type="date" id="dateDevis" value="2025-06-22" required>
+          <label>Date</label>
+          <input type="date" id="dateDevis" value="2025-06-22">
         </div>
         <div class="form-group">
-          <label class="required">Objet</label>
-          <input id="objetDevis" value="Peinture intérieure salon" required>
+          <label>Objet</label>
+          <input id="objetDevis" value="Peinture intérieure salon">
         </div>
         <div class="form-group">
           <label>Devise</label>
           <input id="devise" value="EUR">
-        </div>
-        <div class="form-group">
-          <label class="required">Lieu d'exécution</label>
-          <input id="lieuExecution" placeholder="Adresse du chantier" required>
-        </div>
-        <div class="form-group">
-          <label class="required">Délai d'exécution</label>
-          <input id="delaiExecution" placeholder="Ex: 5 jours ouvrés" required>
-        </div>
-        <div class="form-group">
-          <label class="required">Validité du devis (jours)</label>
-          <input type="number" id="validiteDevis" value="30" min="1" required>
         </div>
       </div>
     </div>
@@ -487,80 +398,53 @@
       <h3 class="section-title">🏢 Informations de l'artisan / entreprise</h3>
       <div class="grid">
         <div class="form-group">
-          <label class="required">Nom / Raison sociale</label>
-          <input id="artisanNom" value="Entreprise ABC" required>
+          <label>Nom / Raison sociale</label>
+          <input id="artisanNom" value="Entreprise ABC">
         </div>
         <div class="form-group">
-          <label class="required">Forme juridique</label>
-          <select id="formeJuridique" required>
+          <label>Adresse</label>
+          <input id="artisanAdresse" value="12 rue des Lilas, 75000 Paris">
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input id="artisanTel" value="06 00 00 00 00">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input id="artisanEmail" value="contact@abc.fr">
+        </div>
+        <div class="form-group">
+          <label>SIRET/SIREN</label>
+          <input id="artisanSiret" placeholder="Numéro SIRET/SIREN (obligatoire)">
+        </div>
+        <div class="form-group">
+          <label>Code APE/NAF</label>
+          <input id="artisanApe" placeholder="Code APE/NAF">
+        </div>
+        <div class="form-group">
+          <label>RCS/RM + ville</label>
+          <input id="artisanRcs" placeholder="RCS/RM et ville d'immatriculation">
+        </div>
+        <div class="form-group">
+          <label>Forme juridique</label>
+          <select id="artisanFormeJuridique">
             <option value="">Sélectionner...</option>
-            <option value="Auto-entrepreneur">Auto-entrepreneur</option>
-            <option value="EURL">EURL</option>
             <option value="SARL">SARL</option>
+            <option value="EURL">EURL</option>
             <option value="SAS">SAS</option>
             <option value="SASU">SASU</option>
-            <option value="SA">SA</option>
-            <option value="Entreprise individuelle">Entreprise individuelle</option>
+            <option value="Auto-entrepreneur">Auto-entrepreneur</option>
+            <option value="EI">Entreprise Individuelle (EI)</option>
+            <option value="Autre">Autre</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="required">Adresse du siège</label>
-          <input id="artisanAdresse" value="12 rue des Lilas, 75000 Paris" required>
+          <label>Capital social (si société)</label>
+          <input id="artisanCapital" placeholder="Montant en €">
         </div>
         <div class="form-group">
-          <label class="required">SIRET</label>
-          <input id="siret" placeholder="123 456 789 00010" pattern="[0-9]{3} [0-9]{3} [0-9]{3} [0-9]{5}" required>
-        </div>
-        <div class="form-group">
-          <label class="required">Code APE/NAF</label>
-          <input id="codeAPE" placeholder="Ex: 4334Z" required>
-        </div>
-        <div class="form-group">
-          <label class="required">RCS/RM + Ville</label>
-          <input id="rcs" placeholder="Ex: RCS Paris 123456789" required>
-        </div>
-        <div class="form-group">
-          <label>Capital social (€)</label>
-          <input type="number" id="capitalSocial" placeholder="Obligatoire pour les sociétés" min="0">
-        </div>
-        <div class="form-group">
-          <label>N° TVA intracommunautaire</label>
-          <input id="tvaIntra" placeholder="FR12345678901">
-        </div>
-        <div class="form-group">
-          <label class="required">Téléphone</label>
-          <input id="artisanTel" value="06 00 00 00 00" required>
-        </div>
-        <div class="form-group">
-          <label class="required">Email</label>
-          <input type="email" id="artisanEmail" value="contact@abc.fr" required>
-        </div>
-      </div>
-    </div>
-
-    <!-- ASSURANCES -->
-    <div class="section">
-      <h3 class="section-title">🛡️ Assurances professionnelles</h3>
-      <div class="grid">
-        <div class="form-group">
-          <label class="required">Assureur RC Pro</label>
-          <input id="assureurRCPro" placeholder="Ex: AXA Assurances" required>
-        </div>
-        <div class="form-group">
-          <label class="required">N° Police RC Pro</label>
-          <input id="policeRCPro" placeholder="Ex: 123456789" required>
-        </div>
-        <div class="form-group">
-          <label>Assureur Décennale</label>
-          <input id="assureurDecennale" placeholder="Obligatoire pour travaux de construction">
-        </div>
-        <div class="form-group">
-          <label>N° Police Décennale</label>
-          <input id="policeDecennale" placeholder="Obligatoire pour travaux de construction">
-        </div>
-        <div class="form-group">
-          <label class="required">Zone géographique couverte</label>
-          <input id="zoneGeographique" placeholder="Ex: France métropolitaine" required>
+          <label>TVA intracommunautaire (si applicable)</label>
+          <input id="artisanTva" placeholder="FRXX XXXXXXX">
         </div>
       </div>
     </div>
@@ -570,50 +454,75 @@
       <h3 class="section-title">👤 Informations client</h3>
       <div class="grid">
         <div class="form-group">
-          <label class="required">Nom complet</label>
-          <input id="clientNom" value="Jean Dupont" required>
+          <label>Nom complet</label>
+          <input id="clientNom" value="Jean Dupont">
         </div>
         <div class="form-group">
-          <label class="required">Adresse complète</label>
-          <input id="clientAdresse" placeholder="Adresse du client" required>
-        </div>
-        <div class="form-group">
-          <label>Téléphone</label>
-          <input id="clientTel" placeholder="Téléphone du client">
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="clientEmail" placeholder="Email du client">
+          <label>Adresse</label>
+          <input id="clientAdresse" placeholder="Adresse du client (optionnel)">
         </div>
       </div>
     </div>
 
-    <!-- CONDITIONS COMMERCIALES -->
+    <!-- INFORMATIONS CONTRACTUELLES -->
     <div class="section">
-      <h3 class="section-title">💰 Conditions commerciales</h3>
+      <h3 class="section-title">📝 Conditions contractuelles</h3>
       <div class="grid">
         <div class="form-group">
-          <label class="required">Conditions de paiement</label>
-          <select id="conditionsPaiement" required>
+          <label>Conditions de paiement</label>
+          <textarea id="conditionsPaiement" rows="3" placeholder="Acompte, échéances, modalités...">30% à la commande, solde à la livraison</textarea>
+        </div>
+        <div class="form-group">
+          <label>Délais d'exécution/livraison</label>
+          <input id="delaisExecution" placeholder="Ex: 15 jours après signature">
+        </div>
+        <div class="form-group">
+          <label>Lieu d'exécution des travaux</label>
+          <input id="lieuExecution" placeholder="Adresse des travaux">
+        </div>
+        <div class="form-group">
+          <label>Assurance professionnelle</label>
+          <input id="assurancePro" placeholder="Nom assureur et numéro de police">
+        </div>
+        <div class="form-group" id="plombierFields" style="display:none;">
+          <label>Assurance décennale</label>
+          <input id="assuranceDecennale" placeholder="Coordonnées assureur">
+        </div>
+        <div class="form-group" id="plombierFields2" style="display:none;">
+          <label>Numéro de police décennale</label>
+          <input id="numeroPoliceDecennale" placeholder="Numéro de police">
+        </div>
+        <div class="form-group" id="plombierFields3" style="display:none;">
+          <label>Zone géographique couverte</label>
+          <input id="zoneGeographique" placeholder="Départements couverts">
+        </div>
+        <div class="form-group">
+          <label>Type d'activité</label>
+          <select id="typeActivite" onchange="togglePlombierFields()">
             <option value="">Sélectionner...</option>
-            <option value="Comptant à la commande">Comptant à la commande</option>
-            <option value="Acompte 30% - Solde à la livraison">Acompte 30% - Solde à la livraison</option>
-            <option value="Acompte 50% - Solde à la livraison">Acompte 50% - Solde à la livraison</option>
-            <option value="30 jours fin de mois">30 jours fin de mois</option>
-            <option value="Personnalisé">Personnalisé</option>
+            <option value="plombier">Plombier</option>
+            <option value="electricien">Électricien</option>
+            <option value="peintre">Peintre</option>
+            <option value="maçon">Maçon</option>
+            <option value="autre">Autre</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Conditions personnalisées</label>
-          <textarea id="conditionsPersonnalisees" placeholder="Détails supplémentaires sur les conditions de paiement"></textarea>
+      </div>
+    </div>
+
+    <!-- MENTIONS CLIENT -->
+    <div class="section">
+      <h3 class="section-title">✍️ Mentions client obligatoires</h3>
+      <div class="grid">
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <div class="checkbox-group">
+            <input type="checkbox" id="mentionReception" checked>
+            <label>"Devis reçu avant exécution des travaux"</label>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Garanties offertes</label>
-          <textarea id="garanties" placeholder="Ex: Garantie décennale, biennale, de parfait achèvement..."></textarea>
-        </div>
-        <div class="form-group">
-          <label>Pénalités de retard</label>
-          <input id="penalitesRetard" placeholder="Ex: 3 fois le taux légal en vigueur">
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Conditions générales de vente (CGV)</label>
+          <textarea id="cgv" rows="5" placeholder="Renseignez vos conditions générales de vente..."></textarea>
         </div>
       </div>
     </div>
@@ -662,15 +571,6 @@
       <div id="totaux"></div>
     </div>
 
-    <!-- CONDITIONS GÉNÉRALES -->
-    <div class="section">
-      <h3 class="section-title">📜 Conditions générales</h3>
-      <div class="form-group">
-        <label>Conditions Générales de Vente (CGV)</label>
-        <textarea id="cgv" rows="6" placeholder="Indiquez vos conditions générales de vente ou référez-vous à celles disponibles sur votre site web...">Les présentes conditions générales s'appliquent à toutes nos prestations. Devis valable 30 jours. Règlement selon les conditions mentionnées ci-dessus. Tout retard de paiement entraînera l'application de pénalités. En cas de litige, seuls les tribunaux de [VILLE] seront compétents.</textarea>
-      </div>
-    </div>
-
     <div class="download-section">
       <button class="btn btn-primary" onclick="simulerDonneesOpenAI()" style="margin-right: 16px;">
         🤖 Simuler données OpenAI
@@ -699,75 +599,6 @@
       }
     }
 
-    // Liste des éléments de conformité
-    const complianceElements = [
-      { id: 'numeroDevis', label: 'Numéro unique du devis', required: true },
-      { id: 'dateDevis', label: 'Date du devis', required: true },
-      { id: 'artisanNom', label: 'Raison sociale / Nom', required: true },
-      { id: 'siret', label: 'Numéro SIRET', required: true },
-      { id: 'codeAPE', label: 'Code APE/NAF', required: true },
-      { id: 'rcs', label: 'RCS/RM + Ville', required: true },
-      { id: 'formeJuridique', label: 'Forme juridique', required: true },
-      { id: 'assureurRCPro', label: 'Assurance RC Professionnelle', required: true },
-      { id: 'policeRCPro', label: 'N° Police RC Pro', required: true },
-      { id: 'zoneGeographique', label: 'Zone géographique couverte', required: true },
-      { id: 'validiteDevis', label: 'Durée de validité', required: true },
-      { id: 'conditionsPaiement', label: 'Conditions de paiement', required: true },
-      { id: 'delaiExecution', label: 'Délais d\'exécution', required: true },
-      { id: 'lieuExecution', label: 'Lieu d\'exécution', required: true },
-      { id: 'clientNom', label: 'Nom du client', required: true },
-      { id: 'clientAdresse', label: 'Adresse du client', required: true }
-    ];
-
-    // Générer la liste de conformité
-    function genererListeConformite() {
-      const checklist = document.getElementById('compliance-checklist');
-      checklist.innerHTML = '';
-      
-      complianceElements.forEach(element => {
-        const div = document.createElement('div');
-        div.className = 'checkbox-item';
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = `check-${element.id}`;
-        checkbox.disabled = true;
-        
-        const label = document.createElement('label');
-        label.htmlFor = `check-${element.id}`;
-        label.textContent = element.label;
-        
-        div.appendChild(checkbox);
-        div.appendChild(label);
-        checklist.appendChild(div);
-      });
-    }
-
-    // Vérifier la conformité
-    function verifierConformite() {
-      complianceElements.forEach(element => {
-        const input = document.getElementById(element.id);
-        const checkbox = document.getElementById(`check-${element.id}`);
-        
-        if (input && checkbox) {
-          const isValid = input.value.trim() !== '';
-          checkbox.checked = isValid;
-          checkbox.parentElement.style.opacity = isValid ? '1' : '0.6';
-        }
-      });
-    }
-
-    // Ajouter des écouteurs d'événements pour la vérification en temps réel
-    function ajouterEcouteursConformite() {
-      complianceElements.forEach(element => {
-        const input = document.getElementById(element.id);
-        if (input) {
-          input.addEventListener('input', verifierConformite);
-          input.addEventListener('change', verifierConformite);
-        }
-      });
-    }
-
     // Fonction pour traiter les données OpenAI n8n
     function processerDonneesOpenAI(openaiData) {
       console.log('Données OpenAI reçues:', openaiData);
@@ -781,4 +612,526 @@
             unite: p.quantite?.unite || p.unite || ''
           },
           prixunitaire: parseFloat(p.prixunitaire) || 0,
-          tauxtva: parseFloat(p.tauxtva ||
+          tauxtva: parseFloat(p.tauxtva || p.tva) || 20
+        }));
+      }
+
+      // Mettre à jour les informations client si disponibles
+      if (openaiData.nomduclient || openaiData.client) {
+        document.getElementById('clientNom').value = openaiData.nomduclient || openaiData.client || '';
+      }
+      
+      // Mettre à jour l'objet du devis si disponible
+      if (openaiData.objet || openaiData.description) {
+        document.getElementById('objetDevis').value = openaiData.objet || openaiData.description || '';
+      }
+
+      // Générer automatiquement un numéro de devis avec la date
+      const today = new Date();
+      const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+      const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      document.getElementById('numeroDevis').value = `D-${dateStr}-${randomNum}`;
+      document.getElementById('dateDevis').value = today.toISOString().slice(0, 10);
+
+      console.log('Prestations traitées:', data.prestations);
+    }
+
+    // Écouter les messages depuis le parent (n8n)
+    window.addEventListener('message', function(event) {
+      console.log('Message reçu:', event.data);
+      
+      if (event.data && event.data.type === 'openai-data') {
+        processerDonneesOpenAI(event.data.payload);
+        render();
+      }
+    });
+
+    // Fonction pour simuler la réception de données (pour test)
+    function simulerDonneesOpenAI() {
+      const donneesTest = {
+        nomduclient: "Jean Dupont",
+        objet: "Rénovation salle de bain",
+        prestations: [
+          {
+            typedeprestation: "Pose de carrelage",
+            quantite: { valeur: 25, unite: "m²" },
+            prixunitaire: 45,
+            tauxtva: 20
+          },
+          {
+            typedeprestation: "Construction de mur",
+            quantite: { valeur: 8, unite: "m²" },
+            prixunitaire: 80,
+            tauxtva: 20
+          }
+        ]
+      };
+      
+      processerDonneesOpenAI(donneesTest);
+      render();
+    }
+
+    function togglePlombierFields() {
+      const isPlombier = document.getElementById('typeActivite').value === 'plombier';
+      document.getElementById('plombierFields').style.display = isPlombier ? 'block' : 'none';
+      document.getElementById('plombierFields2').style.display = isPlombier ? 'block' : 'none';
+      document.getElementById('plombierFields3').style.display = isPlombier ? 'block' : 'none';
+    }
+
+    const tbody = document.querySelector('#table-prestations tbody');
+    const remiseInput = document.getElementById('remise');
+    const applyRemise = document.getElementById('applyRemise');
+
+    function rowHTML(i, p) {
+      // Gérer les valeurs "à vérifier" du workflow n8n
+      const prixunitaire = (p.prixunitaire === "à vérifier" || p.prixunitaire === undefined) ? 0 : p.prixunitaire;
+      const tauxtva = (p.tauxtva === "à vérifier" || p.tauxtva === undefined) ? 20 : p.tauxtva;
+      const typedeprestation = p.typedeprestation || '';
+      const quantiteValeur = p.quantite?.valeur || 0;
+      const quantiteUnite = p.quantite?.unite || '';
+      
+      return `<td><input value="${typedeprestation}" oninput="data.prestations[${i}].typedeprestation=this.value"></td>
+        <td><input type="number" min="0" value="${quantiteValeur}" oninput="data.prestations[${i}].quantite.valeur=parseFloat(this.value)||0;recalculer()"></td>
+        <td><input value="${quantiteUnite}" oninput="data.prestations[${i}].quantite.unite=this.value"></td>
+        <td><input type="number" min="0" value="${prixunitaire}" oninput="data.prestations[${i}].prixunitaire=parseFloat(this.value)||0;recalculer()" ${prixunitaire === 0 ? 'placeholder="À définir"' : ''}></td>
+        <td><input type="number" min="0" value="${tauxtva}" oninput="data.prestations[${i}].tauxtva=parseFloat(this.value)||0;recalculer()"></td>
+        <td class="ht">0.00</td><td class="ttc">0.00</td>
+        <td><button class="btn btn-danger" onclick="supprimer(${i})">🗑️</button></td>`
+    }
+
+    function render() {
+      tbody.innerHTML = '';
+      data.prestations.forEach((p, i) => {
+        if (!p.quantite) p.quantite = { valeur: 0, unite: '' };
+        const tr = document.createElement('tr');
+        tr.innerHTML = rowHTML(i, p);
+        tr.classList.add('fade-in');
+        tbody.appendChild(tr);
+      });
+      recalculer();
+    }
+
+    function ajouterLigne() {
+      data.prestations.push({ typedeprestation: '', quantite: { valeur: 0, unite: '' }, prixunitaire: 0, tauxtva: 20 });
+      render();
+    }
+
+    function supprimer(i) {
+      data.prestations.splice(i, 1);
+      render();
+    }
+
+    function calculs() {
+      let totalHT = 0, totalTVA = 0;
+      data.prestations.forEach(p => {
+        const ht = p.prixunitaire * p.quantite.valeur;
+        const tva = ht * (p.tauxtva / 100);
+        totalHT += ht; 
+        totalTVA += tva;
+      });
+      const remise = applyRemise.checked ? (parseFloat(remiseInput.value) || 0) : 0;
+      const sousTotal = totalHT - remise;
+      const totalTTC = sousTotal + totalTVA;
+      return { totalHT, totalTVA, remise, sousTotal, totalTTC };
+    }
+
+    function recalculer() {
+      tbody.querySelectorAll('tr').forEach((tr, i) => {
+        const p = data.prestations[i];
+        const ht = p.prixunitaire * p.quantite.valeur;
+        const ttc = ht * (1 + p.tauxtva / 100);
+        tr.querySelector('.ht').textContent = ht.toFixed(2) + ' €';
+        tr.querySelector('.ttc').textContent = ttc.toFixed(2) + ' €';
+      });
+
+      const { totalHT, totalTVA, remise, sousTotal, totalTTC } = calculs();
+
+      let totauxHTML = `
+        <div class="total-item">
+          <span class="total-label">Total HT :</span>
+          <span class="total-value">${totalHT.toFixed(2)} €</span>
+        </div>`;
+      
+      if (remise > 0) {
+        totauxHTML += `
+          <div class="total-item">
+            <span class="total-label">Remise :</span>
+            <span class="total-value">-${remise.toFixed(2)} €</span>
+          </div>`;
+      }
+      
+      totauxHTML += `
+        <div class="total-item">
+          <span class="total-label">Sous-total :</span>
+          <span class="total-value">${sousTotal.toFixed(2)} €</span>
+        </div>
+        <div class="total-item">
+          <span class="total-label">TVA :</span>
+          <span class="total-value">${totalTVA.toFixed(2)} €</span>
+        </div>
+        <div class="total-item">
+          <span class="total-label">Total TTC :</span>
+          <span class="total-value">${totalTTC.toFixed(2)} €</span>
+        </div>`;
+
+      document.getElementById('totaux').innerHTML = totauxHTML;
+    }
+
+    function genererPDF() {
+      const { jsPDF } = window.jspdf; 
+      const doc = new jsPDF({ unit:'pt', format:'a4' });
+      
+      // Couleurs modernes
+      const primaryColor = [102, 126, 234];
+      const secondaryColor = [118, 75, 162];
+      const accentColor = [16, 185, 129];
+      const darkGray = [30, 41, 59];
+      const lightGray = [148, 163, 184];
+      
+      // Header avec fond dégradé simulé
+      doc.setFillColor(...primaryColor);
+      doc.rect(0, 0, 595, 80, 'F');
+      
+      // Titre principal
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(28);
+      doc.setFont('helvetica', 'bold');
+      doc.text('DEVIS', 40, 45);
+      
+      // Numéro de devis en haut à droite
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      const numeroDevis = document.getElementById('numeroDevis').value;
+      doc.text(`N° ${numeroDevis}`, 595 - 40 - doc.getTextWidth(`N° ${numeroDevis}`), 35);
+      
+      // Date en haut à droite
+      const dateDevis = document.getElementById('dateDevis').value;
+      doc.text(`Date: ${dateDevis}`, 595 - 40 - doc.getTextWidth(`Date: ${dateDevis}`), 55);
+      
+      // Reset couleur texte
+      doc.setTextColor(...darkGray);
+      
+      // Section Entreprise avec fond coloré
+      doc.setFillColor(250, 251, 255);
+      doc.rect(40, 100, 250, 80, 'F');
+      doc.setDrawColor(...lightGray);
+      doc.rect(40, 100, 250, 80, 'D');
+      
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text('ENTREPRISE', 50, 120);
+      
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...darkGray);
+      
+      const artisanInfo = [
+        document.getElementById('artisanNom').value,
+        document.getElementById('artisanAdresse').value,
+        document.getElementById('artisanTel').value,
+        document.getElementById('artisanEmail').value
+      ];
+      
+      artisanInfo.forEach((info, i) => {
+        if (info) doc.text(info, 50, 140 + i * 12);
+      });
+      
+      // Ajout des mentions légales sous les informations de l'artisan
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      
+      const mentionsLegales = [
+        `SIRET: ${document.getElementById('artisanSiret').value || 'Non renseigné'}`,
+        `APE: ${document.getElementById('artisanApe').value || 'Non renseigné'}`,
+        `RCS: ${document.getElementById('artisanRcs').value || 'Non renseigné'}`,
+        `Forme juridique: ${document.getElementById('artisanFormeJuridique').value || 'Non renseignée'}`,
+        document.getElementById('artisanCapital').value ? `Capital: ${document.getElementById('artisanCapital').value} €` : '',
+        document.getElementById('artisanTva').value ? `TVA intra: ${document.getElementById('artisanTva').value}` : 'Non assujetti à la TVA'
+      ].filter(Boolean);
+
+      mentionsLegales.forEach((mention, i) => {
+        if (mention) doc.text(mention, 50, 190 + i * 10);
+      });
+
+      // Section Client avec fond coloré
+      doc.setFillColor(250, 255, 250);
+      doc.rect(305, 100, 250, 80, 'F');
+      doc.setDrawColor(...lightGray);
+      doc.rect(305, 100, 250, 80, 'D');
+      
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...accentColor);
+      doc.text('CLIENT', 315, 120);
+      
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...darkGray);
+      
+      const clientInfo = [
+        document.getElementById('clientNom').value,
+        document.getElementById('clientAdresse').value
+      ];
+      
+      clientInfo.forEach((info, i) => {
+        if (info) doc.text(info, 315, 140 + i * 12);
+      });
+      
+      // Objet du devis
+      let currentY = 200;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text('OBJET:', 40, currentY);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...darkGray);
+      const objet = document.getElementById('objetDevis').value;
+      doc.text(objet, 85, currentY);
+      
+      // Tableau des prestations avec style moderne
+      const tableStartY = currentY + 30;
+      
+      const body = data.prestations.map(p => [
+        p.typedeprestation || '',
+        p.quantite?.valeur?.toString() || '0',
+        p.quantite?.unite || '',
+        `${p.prixunitaire || 0} €`,
+        `${p.tauxtva || 0}%`,
+        `${(p.prixunitaire * p.quantite.valeur).toFixed(2)} €`,
+        `${(p.prixunitaire * p.quantite.valeur * (1 + p.tauxtva / 100)).toFixed(2)} €`
+      ]);
+      
+      doc.autoTable({
+        startY: tableStartY,
+        head: [['Prestation', 'Qté', 'Unité', 'P.U.', 'TVA', 'Total HT', 'Total TTC']],
+        body: body,
+        styles: {
+          fontSize: 10,
+          cellPadding: 8,
+          textColor: darkGray,
+          lineColor: [226, 232, 240],
+          lineWidth: 0.5
+        },
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        columnStyles: {
+          0: { halign: 'left', cellWidth: 120 },
+          1: { halign: 'center', cellWidth: 40 },
+          2: { halign: 'center', cellWidth: 40 },
+          3: { halign: 'right', cellWidth: 60 },
+          4: { halign: 'center', cellWidth: 40 },
+          5: { halign: 'right', cellWidth: 70 },
+          6: { halign: 'right', cellWidth: 70 }
+        }
+      });
+      
+      // Calculs et totaux avec style moderne
+      const finY = doc.lastAutoTable.finalY + 20;
+      const { totalHT, totalTVA, remise, sousTotal, totalTTC } = calculs();
+      
+      // Cadre pour les totaux
+      const totalsBoxY = finY;
+      const totalsBoxHeight = remise > 0 ? 100 : 80;
+      
+      doc.setFillColor(248, 250, 252);
+      doc.rect(350, totalsBoxY, 205, totalsBoxHeight, 'F');
+      doc.setDrawColor(...lightGray);
+      doc.rect(350, totalsBoxY, 205, totalsBoxHeight, 'D');
+      
+      // Totaux avec alignement à droite
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...darkGray);
+      
+      let totalsY = totalsBoxY + 20;
+      
+      // Total HT
+      doc.text('Total HT:', 360, totalsY);
+      const totalHTText = `${totalHT.toFixed(2)} €`;
+      doc.text(totalHTText, 545 - doc.getTextWidth(totalHTText), totalsY);
+      
+      // Remise si applicable
+      if (remise > 0) {
+        totalsY += 15;
+        doc.setTextColor(239, 68, 68);
+        doc.text('Remise:', 360, totalsY);
+        const remiseText = `-${remise.toFixed(2)} €`;
+        doc.text(remiseText, 545 - doc.getTextWidth(remiseText), totalsY);
+        doc.setTextColor(...darkGray);
+        
+        totalsY += 15;
+        doc.text('Sous-total:', 360, totalsY);
+        const sousTotalText = `${sousTotal.toFixed(2)} €`;
+        doc.text(sousTotalText, 545 - doc.getTextWidth(sousTotalText), totalsY);
+      }
+      
+      // TVA
+      totalsY += 15;
+      doc.text('TVA:', 360, totalsY);
+      const tvaText = `${totalTVA.toFixed(2)} €`;
+      doc.text(tvaText, 545 - doc.getTextWidth(tvaText), totalsY);
+      
+      // Total TTC - mis en évidence
+      totalsY += 20;
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text('TOTAL TTC:', 360, totalsY);
+      const totalTTCText = `${totalTTC.toFixed(2)} €`;
+      doc.text(totalTTCText, 545 - doc.getTextWidth(totalTTCText), totalsY);
+      
+      // Conditions contractuelles
+      const contractY = doc.lastAutoTable.finalY + 30;
+      doc.setFontSize(10);
+      doc.setTextColor(...darkGray);
+      
+      // Conditions de paiement
+      doc.setFont('helvetica', 'bold');
+      doc.text('Conditions de paiement:', 40, contractY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(document.getElementById('conditionsPaiement').value || 'Non spécifiées', 40, contractY + 15);
+      
+      // Délais d'exécution
+      doc.setFont('helvetica', 'bold');
+      doc.text('Délais d\'exécution:', 40, contractY + 35);
+      doc.setFont('helvetica', 'normal');
+      doc.text(document.getElementById('delaisExecution').value || 'Non spécifiés', 40, contractY + 50);
+      
+      // Assurance
+      if (document.getElementById('typeActivite').value === 'plombier') {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Assurance décennale:', 40, contractY + 70);
+        doc.setFont('helvetica', 'normal');
+        doc.text(document.getElementById('assuranceDecennale').value || 'Non spécifiée', 40, contractY + 85);
+        doc.text(`Police n°: ${document.getElementById('numeroPoliceDecennale').value || 'Non spécifié'}`, 40, contractY + 100);
+      } else {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Assurance professionnelle:', 40, contractY + 70);
+        doc.setFont('helvetica', 'normal');
+        doc.text(document.getElementById('assurancePro').value || 'Non spécifiée', 40, contractY + 85);
+      }
+
+      // Mentions légales obligatoires
+      const mentionsY = contractY + (document.getElementById('typeActivite').value === 'plombier' ? 120 : 100);
+      doc.setFontSize(8);
+      doc.setTextColor(120, 120, 120);
+      
+      if (document.getElementById('mentionReception').checked) {
+        doc.text('« Devis reçu avant exécution des travaux »', 40, mentionsY);
+      }
+      
+      // Signature
+      const signatureY = mentionsY + 30;
+      doc.setFontSize(10);
+      doc.setTextColor(...darkGray);
+      doc.text('Fait à ___________________, le ___________________', 40, signatureY);
+      doc.text('Signature du client, précédée de la mention « Bon pour accord »', 40, signatureY + 40);
+      
+      // CGV
+      if (document.getElementById('cgv').value) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.setTextColor(...primaryColor);
+        doc.text('Conditions Générales de Vente', 40, 40);
+        doc.setFontSize(10);
+        doc.setTextColor(...darkGray);
+        doc.text(doc.splitTextToSize(document.getElementById('cgv').value, 500), 40, 60);
+      }
+
+      // Pied de page moderne - positionné tout en bas
+      const pageHeight = 841.89; // Hauteur d'une page A4 en points
+      const footerY = pageHeight - 50;
+      doc.setFillColor(...primaryColor);
+      doc.rect(0, footerY, 595, 50, 'F');
+      
+      doc.setFontSize(10);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Devis généré automatiquement - Valable 30 jours', 40, footerY + 20);
+      
+      const date = new Date().toLocaleDateString('fr-FR');
+      const footerText = `Généré le ${date}`;
+      doc.text(footerText, 595 - 40 - doc.getTextWidth(footerText), footerY + 20);
+      
+      // Sauvegarde
+      const clientNom = document.getElementById('clientNom').value.replace(/\s+/g, '_') || 'Client';
+      doc.save(`Devis_${clientNom}_${numeroDevis}.pdf`);
+    }
+
+    // Initialize - Charger les données du workflow n8n si disponibles
+    if (data.nomduclient) {
+      document.getElementById('clientNom').value = data.nomduclient;
+    }
+    
+    // Traiter les données si elles sont passées via URL
+    if (urlParams.get('openai')) {
+      try {
+        const openaiData = JSON.parse(decodeURIComponent(urlParams.get('openai')));
+        processerDonneesOpenAI(openaiData);
+      } catch (e) {
+        console.error('Erreur lors du parsing des données OpenAI:', e);
+      }
+    }
+    
+    // Si aucune prestation n'est fournie, ajouter une ligne vide
+    if (data.prestations.length === 0) {
+      data.prestations.push({ 
+        typedeprestation: '', 
+        quantite: { valeur: 0, unite: '' }, 
+        prixunitaire: 0, 
+        tauxtva: 20 
+      });
+    }
+
+    // Afficher les instructions pour l'intégration n8n
+    if (data.prestations.length === 1 && !data.prestations[0].typedeprestation) {
+      console.log(`
+🔗 INTÉGRATION N8N:
+
+1. Via URL: Ajoutez ?openai=... avec vos données JSON encodées
+   Exemple: editeur-devis.html?openai=${encodeURIComponent(JSON.stringify({
+     nomduclient: "Jean Dupont",
+     objet: "Travaux de rénovation",
+     prestations: [{
+       typedeprestation: "Pose carrelage",
+       quantite: {valeur: 25, unite: "m²"},
+       prixunitaire: 45,
+       tauxtva: 20
+     }]
+   }))}
+
+2. Via PostMessage: 
+   window.postMessage({
+     type: 'openai-data',
+     payload: { /* vos données */ }
+   }, '*');
+
+3. Structure attendue des données OpenAI:
+   {
+     "nomduclient": "string",
+     "objet": "string", 
+     "prestations": [
+       {
+         "typedeprestation": "string",
+         "quantite": {"valeur": number, "unite": "string"},
+         "prixunitaire": number,
+         "tauxtva": number
+       }
+     ]
+   }
+      `);
+    }
+    
+    render();
+  </script>
+</body>
+</html>
