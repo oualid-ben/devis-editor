@@ -779,139 +779,119 @@
 
     function genererPDF() {
       const { jsPDF } = window.jspdf; 
-      const doc = new jsPDF({ unit:'pt', format:'a4' });
-      
+      const doc = new jsPDF({ 
+        unit: 'pt', 
+        format: 'a4',
+        hotfixes: ["px_scaling"] // Correction du scaling
+      });
+    
       // Couleurs modernes
       const primaryColor = [102, 126, 234];
       const secondaryColor = [118, 75, 162];
-      const accentColor = [16, 185, 129];
       const darkGray = [30, 41, 59];
-      const lightGray = [148, 163, 184];
-      
-      // Header avec fond dégradé simulé
+      const lightGray = [226, 232, 240];
+    
+      // Header avec logo simulé
       doc.setFillColor(...primaryColor);
       doc.rect(0, 0, 595, 80, 'F');
       
-      // Titre principal
+      // Titre principal centré
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(28);
+      doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
-      doc.text('DEVIS', 40, 45);
-      
-      // Numéro de devis en haut à droite
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
+      doc.text('DEVIS', 297.5, 45, { align: 'center' });
+    
+      // Numéro et date alignés à droite
+      doc.setFontSize(10);
       const numeroDevis = document.getElementById('numeroDevis').value;
-      doc.text(`N° ${numeroDevis}`, 595 - 40 - doc.getTextWidth(`N° ${numeroDevis}`), 35);
-      
-      // Date en haut à droite
       const dateDevis = document.getElementById('dateDevis').value;
-      doc.text(`Date: ${dateDevis}`, 595 - 40 - doc.getTextWidth(`Date: ${dateDevis}`), 55);
+      doc.text(`N°: ${numeroDevis}`, 555, 35, { align: 'right' });
+      doc.text(`Date: ${dateDevis}`, 555, 50, { align: 'right' });
+    
+      // Sections Entreprise et Client côte à côte
+      const companyY = 90;
       
-      // Reset couleur texte
-      doc.setTextColor(...darkGray);
-      
-      // Section Entreprise avec fond coloré
-      doc.setFillColor(250, 251, 255);
-      doc.rect(40, 100, 250, 80, 'F');
+      // Section Entreprise
+      doc.setFillColor(248, 249, 252);
+      doc.rect(40, companyY, 250, 100, 'F');
       doc.setDrawColor(...lightGray);
-      doc.rect(40, 100, 250, 80, 'D');
+      doc.rect(40, companyY, 250, 100, 'D');
       
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
       doc.setTextColor(...primaryColor);
-      doc.text('ENTREPRISE', 50, 120);
+      doc.text('PRESTATAIRE', 50, companyY + 20);
       
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
       doc.setTextColor(...darkGray);
       
-      const artisanInfo = [
+      const companyInfo = [
         document.getElementById('artisanNom').value,
         document.getElementById('artisanAdresse').value,
         document.getElementById('artisanTel').value,
-        document.getElementById('artisanEmail').value
-      ];
-      
-      artisanInfo.forEach((info, i) => {
-        if (info) doc.text(info, 50, 140 + i * 12);
-      });
-      
-      // Ajout des mentions légales sous les informations de l'artisan
-      doc.setFontSize(9);
-      doc.setTextColor(100, 100, 100);
-      
-      const mentionsLegales = [
+        document.getElementById('artisanEmail').value,
         `SIRET: ${document.getElementById('artisanSiret').value || 'Non renseigné'}`,
-        `APE: ${document.getElementById('artisanApe').value || 'Non renseigné'}`,
         `RCS: ${document.getElementById('artisanRcs').value || 'Non renseigné'}`,
         `Forme juridique: ${document.getElementById('artisanFormeJuridique').value || 'Non renseignée'}`,
-        document.getElementById('artisanCapital').value ? `Capital: ${document.getElementById('artisanCapital').value} €` : '',
-        document.getElementById('artisanTva').value ? `TVA intra: ${document.getElementById('artisanTva').value}` : 'Non assujetti à la TVA'
+        document.getElementById('artisanCapital').value ? `Capital: ${document.getElementById('artisanCapital').value} €` : ''
       ].filter(Boolean);
-
-      mentionsLegales.forEach((mention, i) => {
-        if (mention) doc.text(mention, 50, 190 + i * 10);
+    
+      companyInfo.forEach((info, i) => {
+        doc.text(info, 50, companyY + 40 + (i * 12));
       });
-
-      // Section Client avec fond coloré
-      doc.setFillColor(250, 255, 250);
-      doc.rect(305, 100, 250, 80, 'F');
+    
+      // Section Client
+      doc.setFillColor(248, 252, 253);
+      doc.rect(305, companyY, 250, 100, 'F');
       doc.setDrawColor(...lightGray);
-      doc.rect(305, 100, 250, 80, 'D');
+      doc.rect(305, companyY, 250, 100, 'D');
       
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...accentColor);
-      doc.text('CLIENT', 315, 120);
+      doc.setFontSize(12);
+      doc.setTextColor(16, 185, 129);
+      doc.text('CLIENT', 315, companyY + 20);
       
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
       doc.setTextColor(...darkGray);
       
       const clientInfo = [
         document.getElementById('clientNom').value,
-        document.getElementById('clientAdresse').value
+        document.getElementById('clientAdresse').value || 'Non renseigné'
       ];
-      
+    
       clientInfo.forEach((info, i) => {
-        if (info) doc.text(info, 315, 140 + i * 12);
+        doc.text(info, 315, companyY + 40 + (i * 12));
       });
-      
+    
       // Objet du devis
-      let currentY = 200;
       doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
       doc.setTextColor(...primaryColor);
-      doc.text('OBJET:', 40, currentY);
-      
+      doc.text('OBJET:', 40, companyY + 120);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...darkGray);
-      const objet = document.getElementById('objetDevis').value;
-      doc.text(objet, 85, currentY);
-      
-      // Tableau des prestations avec style moderne
-      const tableStartY = currentY + 30;
+      doc.text(document.getElementById('objetDevis').value, 80, companyY + 120);
+    
+      // Tableau des prestations
+      const tableStartY = companyY + 150;
       
       const body = data.prestations.map(p => [
         p.typedeprestation || '',
         p.quantite?.valeur?.toString() || '0',
         p.quantite?.unite || '',
-        `${p.prixunitaire || 0} €`,
+        `${(p.prixunitaire || 0).toFixed(2)} €`,
         `${p.tauxtva || 0}%`,
         `${(p.prixunitaire * p.quantite.valeur).toFixed(2)} €`,
         `${(p.prixunitaire * p.quantite.valeur * (1 + p.tauxtva / 100)).toFixed(2)} €`
       ]);
-      
+    
       doc.autoTable({
         startY: tableStartY,
-        head: [['Prestation', 'Qté', 'Unité', 'P.U.', 'TVA', 'Total HT', 'Total TTC']],
+        head: [['Prestation', 'Qté', 'Unité', 'P.U. HT', 'TVA', 'Total HT', 'Total TTC']],
         body: body,
+        margin: { left: 40 },
         styles: {
-          fontSize: 10,
-          cellPadding: 8,
+          fontSize: 9,
+          cellPadding: 6,
           textColor: darkGray,
-          lineColor: [226, 232, 240],
+          lineColor: lightGray,
           lineWidth: 0.5
         },
         headStyles: {
@@ -920,147 +900,98 @@
           fontStyle: 'bold',
           halign: 'center'
         },
-        alternateRowStyles: {
-          fillColor: [248, 250, 252]
-        },
         columnStyles: {
-          0: { halign: 'left', cellWidth: 120 },
-          1: { halign: 'center', cellWidth: 40 },
-          2: { halign: 'center', cellWidth: 40 },
-          3: { halign: 'right', cellWidth: 60 },
-          4: { halign: 'center', cellWidth: 40 },
-          5: { halign: 'right', cellWidth: 70 },
-          6: { halign: 'right', cellWidth: 70 }
+          0: { cellWidth: 120 },
+          1: { cellWidth: 40, halign: 'center' },
+          2: { cellWidth: 40, halign: 'center' },
+          3: { cellWidth: 60, halign: 'right' },
+          4: { cellWidth: 40, halign: 'center' },
+          5: { cellWidth: 70, halign: 'right' },
+          6: { cellWidth: 70, halign: 'right' }
         }
       });
-      
-      // Calculs et totaux avec style moderne
-      const finY = doc.lastAutoTable.finalY + 20;
+    
+      // Totaux
+      const totalsY = doc.lastAutoTable.finalY + 20;
       const { totalHT, totalTVA, remise, sousTotal, totalTTC } = calculs();
       
-      // Cadre pour les totaux
-      const totalsBoxY = finY;
-      const totalsBoxHeight = remise > 0 ? 100 : 80;
-      
-      doc.setFillColor(248, 250, 252);
-      doc.rect(350, totalsBoxY, 205, totalsBoxHeight, 'F');
-      doc.setDrawColor(...lightGray);
-      doc.rect(350, totalsBoxY, 205, totalsBoxHeight, 'D');
-      
-      // Totaux avec alignement à droite
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...darkGray);
-      
-      let totalsY = totalsBoxY + 20;
-      
-      // Total HT
-      doc.text('Total HT:', 360, totalsY);
-      const totalHTText = `${totalHT.toFixed(2)} €`;
-      doc.text(totalHTText, 545 - doc.getTextWidth(totalHTText), totalsY);
-      
-      // Remise si applicable
-      if (remise > 0) {
-        totalsY += 15;
-        doc.setTextColor(239, 68, 68);
-        doc.text('Remise:', 360, totalsY);
-        const remiseText = `-${remise.toFixed(2)} €`;
-        doc.text(remiseText, 545 - doc.getTextWidth(remiseText), totalsY);
-        doc.setTextColor(...darkGray);
-        
-        totalsY += 15;
-        doc.text('Sous-total:', 360, totalsY);
-        const sousTotalText = `${sousTotal.toFixed(2)} €`;
-        doc.text(sousTotalText, 545 - doc.getTextWidth(sousTotalText), totalsY);
-      }
-      
-      // TVA
-      totalsY += 15;
-      doc.text('TVA:', 360, totalsY);
-      const tvaText = `${totalTVA.toFixed(2)} €`;
-      doc.text(tvaText, 545 - doc.getTextWidth(tvaText), totalsY);
-      
-      // Total TTC - mis en évidence
-      totalsY += 20;
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...primaryColor);
-      doc.text('TOTAL TTC:', 360, totalsY);
-      const totalTTCText = `${totalTTC.toFixed(2)} €`;
-      doc.text(totalTTCText, 545 - doc.getTextWidth(totalTTCText), totalsY);
-      
-      // Conditions contractuelles
-      const contractY = doc.lastAutoTable.finalY + 30;
       doc.setFontSize(10);
       doc.setTextColor(...darkGray);
       
-      // Conditions de paiement
-      doc.setFont('helvetica', 'bold');
-      doc.text('Conditions de paiement:', 40, contractY);
-      doc.setFont('helvetica', 'normal');
-      doc.text(document.getElementById('conditionsPaiement').value || 'Non spécifiées', 40, contractY + 15);
+      // Total HT
+      doc.text('Total HT:', 400, totalsY);
+      doc.text(`${totalHT.toFixed(2)} €`, 500, totalsY, { align: 'right' });
       
-      // Délais d'exécution
-      doc.setFont('helvetica', 'bold');
-      doc.text('Délais d\'exécution:', 40, contractY + 35);
-      doc.setFont('helvetica', 'normal');
-      doc.text(document.getElementById('delaisExecution').value || 'Non spécifiés', 40, contractY + 50);
-      
-      // Assurance
-      if (document.getElementById('typeActivite').value === 'plombier') {
-        doc.setFont('helvetica', 'bold');
-        doc.text('Assurance décennale:', 40, contractY + 70);
-        doc.setFont('helvetica', 'normal');
-        doc.text(document.getElementById('assuranceDecennale').value || 'Non spécifiée', 40, contractY + 85);
-        doc.text(`Police n°: ${document.getElementById('numeroPoliceDecennale').value || 'Non spécifié'}`, 40, contractY + 100);
-      } else {
-        doc.setFont('helvetica', 'bold');
-        doc.text('Assurance professionnelle:', 40, contractY + 70);
-        doc.setFont('helvetica', 'normal');
-        doc.text(document.getElementById('assurancePro').value || 'Non spécifiée', 40, contractY + 85);
+      // Remise si applicable
+      if (remise > 0) {
+        doc.text('Remise:', 400, totalsY + 15);
+        doc.text(`-${remise.toFixed(2)} €`, 500, totalsY + 15, { align: 'right' });
+        doc.text('Sous-total:', 400, totalsY + 30);
+        doc.text(`${sousTotal.toFixed(2)} €`, 500, totalsY + 30, { align: 'right' });
       }
-
-      // Mentions légales obligatoires
-      const mentionsY = contractY + (document.getElementById('typeActivite').value === 'plombier' ? 120 : 100);
+      
+      // TVA
+      doc.text('TVA:', 400, totalsY + (remise > 0 ? 45 : 15));
+      doc.text(`${totalTVA.toFixed(2)} €`, 500, totalsY + (remise > 0 ? 45 : 15), { align: 'right' });
+      
+      // Total TTC
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('TOTAL TTC:', 400, totalsY + (remise > 0 ? 70 : 40));
+      doc.text(`${totalTTC.toFixed(2)} €`, 500, totalsY + (remise > 0 ? 70 : 40), { align: 'right' });
+    
+      // Conditions contractuelles
+      const contractY = totalsY + (remise > 0 ? 100 : 70);
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('CONDITIONS:', 40, contractY);
+      
+      doc.setFont('helvetica', 'normal');
+      const conditions = [
+        `Paiement: ${document.getElementById('conditionsPaiement').value || 'Non spécifié'}`,
+        `Délais: ${document.getElementById('delaisExecution').value || 'Non spécifié'}`,
+        `Lieu: ${document.getElementById('lieuExecution').value || 'Non spécifié'}`,
+        `Assurance: ${document.getElementById('assurancePro').value || 'Non spécifiée'}`
+      ];
+      
+      conditions.forEach((cond, i) => {
+        doc.text(cond, 40, contractY + 20 + (i * 15));
+      });
+    
+      // Mentions légales
+      const mentionsY = contractY + 90;
       doc.setFontSize(8);
-      doc.setTextColor(120, 120, 120);
+      doc.setTextColor(100, 100, 100);
       
       if (document.getElementById('mentionReception').checked) {
         doc.text('« Devis reçu avant exécution des travaux »', 40, mentionsY);
       }
       
       // Signature
-      const signatureY = mentionsY + 30;
       doc.setFontSize(10);
       doc.setTextColor(...darkGray);
-      doc.text('Fait à ___________________, le ___________________', 40, signatureY);
-      doc.text('Signature du client, précédée de la mention « Bon pour accord »', 40, signatureY + 40);
-      
-      // CGV
+      doc.text('Fait à ___________________, le ___________________', 40, mentionsY + 30);
+      doc.text('Signature du client, précédée de la mention « Bon pour accord »', 40, mentionsY + 50);
+    
+      // CGV si renseignées
       if (document.getElementById('cgv').value) {
         doc.addPage();
-        doc.setFontSize(14);
+        doc.setFontSize(12);
         doc.setTextColor(...primaryColor);
-        doc.text('Conditions Générales de Vente', 40, 40);
-        doc.setFontSize(10);
+        doc.text('CONDITIONS GÉNÉRALES DE VENTE', 40, 40);
+        doc.setFontSize(9);
         doc.setTextColor(...darkGray);
         doc.text(doc.splitTextToSize(document.getElementById('cgv').value, 500), 40, 60);
       }
-
-      // Pied de page moderne - positionné tout en bas
-      const pageHeight = 841.89; // Hauteur d'une page A4 en points
-      const footerY = pageHeight - 50;
+    
+      // Pied de page
+      const footerY = 800;
       doc.setFillColor(...primaryColor);
-      doc.rect(0, footerY, 595, 50, 'F');
-      
-      doc.setFontSize(10);
+      doc.rect(0, footerY, 595, 30, 'F');
       doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Devis généré automatiquement - Valable 30 jours', 40, footerY + 20);
-      
-      const date = new Date().toLocaleDateString('fr-FR');
-      const footerText = `Généré le ${date}`;
-      doc.text(footerText, 595 - 40 - doc.getTextWidth(footerText), footerY + 20);
+      doc.setFontSize(8);
+      doc.text(`Devis valable 30 jours - Généré le ${new Date().toLocaleDateString('fr-FR')}`, 40, footerY + 20);
       
       // Sauvegarde
       const clientNom = document.getElementById('clientNom').value.replace(/\s+/g, '_') || 'Client';
