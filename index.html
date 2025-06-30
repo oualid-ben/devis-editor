@@ -466,6 +466,9 @@
     </div>
 
     <div class="download-section">
+      <button class="btn btn-primary" onclick="simulerDonneesOpenAI()" style="margin-right: 16px;">
+        🤖 Simuler données OpenAI
+      </button>
       <button class="btn btn-secondary" onclick="genererPDF()">
         📄 Télécharger le PDF
       </button>
@@ -488,6 +491,78 @@
         console.error('Erreur lors du parsing des données:', e);
         data = { prestations: [] };
       }
+    }
+
+    // Fonction pour traiter les données OpenAI n8n
+    function processerDonneesOpenAI(openaiData) {
+      console.log('Données OpenAI reçues:', openaiData);
+      
+      // Si les données contiennent directement les prestations
+      if (openaiData.prestations && Array.isArray(openaiData.prestations)) {
+        data.prestations = openaiData.prestations.map(p => ({
+          typedeprestation: p.typedeprestation || p.prestation || p.description || '',
+          quantite: {
+            valeur: p.quantite?.valeur || p.quantite || 1,
+            unite: p.quantite?.unite || p.unite || ''
+          },
+          prixunitaire: parseFloat(p.prixunitaire) || 0,
+          tauxtva: parseFloat(p.tauxtva || p.tva) || 20
+        }));
+      }
+
+      // Mettre à jour les informations client si disponibles
+      if (openaiData.nomduclient || openaiData.client) {
+        document.getElementById('clientNom').value = openaiData.nomduclient || openaiData.client || '';
+      }
+      
+      // Mettre à jour l'objet du devis si disponible
+      if (openaiData.objet || openaiData.description) {
+        document.getElementById('objetDevis').value = openaiData.objet || openaiData.description || '';
+      }
+
+      // Générer automatiquement un numéro de devis avec la date
+      const today = new Date();
+      const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+      const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      document.getElementById('numeroDevis').value = `D-${dateStr}-${randomNum}`;
+      document.getElementById('dateDevis').value = today.toISOString().slice(0, 10);
+
+      console.log('Prestations traitées:', data.prestations);
+    }
+
+    // Écouter les messages depuis le parent (n8n)
+    window.addEventListener('message', function(event) {
+      console.log('Message reçu:', event.data);
+      
+      if (event.data && event.data.type === 'openai-data') {
+        processerDonneesOpenAI(event.data.payload);
+        render();
+      }
+    });
+
+    // Fonction pour simuler la réception de données (pour test)
+    function simulerDonneesOpenAI() {
+      const donneesTest = {
+        nomduclient: "Jean Dupont",
+        objet: "Rénovation salle de bain",
+        prestations: [
+          {
+            typedeprestation: "Pose de carrelage",
+            quantite: { valeur: 25, unite: "m²" },
+            prixunitaire: 45,
+            tauxtva: 20
+          },
+          {
+            typedeprestation: "Construction de mur",
+            quantite: { valeur: 8, unite: "m²" },
+            prixunitaire: 80,
+            tauxtva: 20
+          }
+        ]
+      };
+      
+      processerDonneesOpenAI(donneesTest);
+      render();
     }
 
     const tbody = document.querySelector('#table-prestations tbody');
@@ -809,6 +884,16 @@
       document.getElementById('clientNom').value = data.nomduclient;
     }
     
+    // Traiter les données si elles sont passées via URL
+    if (urlParams.get('openai')) {
+      try {
+        const openaiData = JSON.parse(decodeURIComponent(urlParams.get('openai')));
+        processerDonneesOpenAI(openaiData);
+      } catch (e) {
+        console.error('Erreur lors du parsing des données OpenAI:', e);
+      }
+    }
+    
     // Si aucune prestation n'est fournie, ajouter une ligne vide
     if (data.prestations.length === 0) {
       data.prestations.push({ 
@@ -817,6 +902,45 @@
         prixunitaire: 0, 
         tauxtva: 20 
       });
+    }
+
+    // Afficher les instructions pour l'intégration n8n
+    if (data.prestations.length === 1 && !data.prestations[0].typedeprestation) {
+      console.log(`
+🔗 INTÉGRATION N8N:
+
+1. Via URL: Ajoutez ?openai=... avec vos données JSON encodées
+   Exemple: editeur-devis.html?openai=${encodeURIComponent(JSON.stringify({
+     nomduclient: "Jean Dupont",
+     objet: "Travaux de rénovation",
+     prestations: [{
+       typedeprestation: "Pose carrelage",
+       quantite: {valeur: 25, unite: "m²"},
+       prixunitaire: 45,
+       tauxtva: 20
+     }]
+   }))}
+
+2. Via PostMessage: 
+   window.postMessage({
+     type: 'openai-data',
+     payload: { /* vos données */ }
+   }, '*');
+
+3. Structure attendue des données OpenAI:
+   {
+     "nomduclient": "string",
+     "objet": "string", 
+     "prestations": [
+       {
+         "typedeprestation": "string",
+         "quantite": {"valeur": number, "unite": "string"},
+         "prixunitaire": number,
+         "tauxtva": number
+       }
+     ]
+   }
+      `);
     }
     
     render();
