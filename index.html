@@ -1,60 +1,315 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Éditeur de Devis Professionnel OBM</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Éditeur de Devis</title>
+  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script src="app.js" defer></script>
+
+  <!-- STYLE -->
+  <style>
+    /* ----------------------- RESET & THEME ----------------------- */
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      min-height:100vh;
+      padding:20px;
+    }
+    .container{
+      max-width:1200px;margin:0 auto;background:rgba(255,255,255,.95);
+      backdrop-filter:blur(20px);border-radius:24px;padding:40px;
+      box-shadow:0 32px 64px rgba(0,0,0,.15),0 0 0 1px rgba(255,255,255,.1);
+      animation:slideIn .6s ease-out
+    }
+    @keyframes slideIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ----------------------- TYPO ----------------------- */
+    .header{text-align:center;margin-bottom:48px}
+    .header h1{font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+    .header p{color:#64748b;font-size:1.1rem}
+
+    /* ----------------------- SECTIONS ----------------------- */
+    .section{background:rgba(255,255,255,.7);border-radius:16px;padding:32px;margin-bottom:32px;border:1px solid rgba(255,255,255,.2);transition:.3s}
+    .section:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(0,0,0,.1)}
+    .section-title{font-size:1.25rem;font-weight:700;color:#1e293b;margin-bottom:24px;display:flex;align-items:center;gap:12px}
+    .section-title::before{content:"";width:4px;height:24px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:2px}
+
+    /* ----------------------- GRID HELPERS ----------------------- */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:24px}
+    .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+    .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px}
+
+    /* ----------------------- FORM ----------------------- */
+    .form-group label{display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:8px;transition:.2s}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:16px 20px;border:2px solid #e5e7eb;border-radius:12px;font-size:1rem;background:rgba(255,255,255,.9);transition:.3s;backdrop-filter:blur(10px);resize:vertical}
+    .form-group textarea{min-height:80px}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1);background:rgba(255,255,255,1)}
+    .form-group input:focus+label,.form-group select:focus+label,.form-group textarea:focus+label{color:#667eea}
+
+    /* ----------------------- INFO / WARNING BOXES ----------------------- */
+    .warning-box{background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:12px;padding:20px;margin-bottom:24px}
+    .warning-box h4{color:#92400e;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+    .warning-box p{color:#92400e;font-size:.9rem}
+    .info-box{background:linear-gradient(135deg,#dbeafe,#bfdbfe);border:2px solid #3b82f6;border-radius:12px;padding:20px;margin-bottom:24px}
+    .info-box h4{color:#1e40af;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+    .info-box p{color:#1e40af;font-size:.9rem}
+
+    /* ----------------------- TABLE ----------------------- */
+    .table-container{background:rgba(255,255,255,.9);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.05);margin-bottom:32px}
+    .table-wrapper{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    th{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-weight:600;font-size:.875rem;padding:20px 16px;text-align:left;white-space:nowrap}
+    td{padding:16px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    tbody tr:hover{background:rgba(102,126,234,.05)}
+    td input{width:100%;padding:12px 16px;border:1px solid #e2e8f0;border-radius:8px;font-size:.875rem;background:rgba(255,255,255,.8);transition:.2s}
+    td input:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 2px rgba(102,126,234,.1);background:#fff}
+    .ht,.ttc{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;color:#1e293b}
+
+    /* ----------------------- BUTTONS ----------------------- */
+    .btn{border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:.3s;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px 32px;box-shadow:0 4px 16px rgba(102,126,234,.3)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(102,126,234,.4)}
+    .btn-secondary{background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:20px 40px;font-size:1.1rem;box-shadow:0 4px 16px rgba(16,185,129,.3)}
+    .btn-secondary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,185,129,.4)}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:8px 16px;font-size:.875rem;border-radius:8px}
+    .btn-danger:hover{transform:scale(1.05);box-shadow:0 4px 12px rgba(239,68,68,.3)}
+
+    /* ----------------------- TOTALS & DISCOUNT ----------------------- */
+    .discount-section{display:flex;align-items:end;gap:24px;margin:24px 0;padding:24px;background:rgba(255,255,255,.5);border-radius:12px;border:1px solid rgba(255,255,255,.3)}
+    .totals-section{background:linear-gradient(135deg,rgba(102,126,234,.1),rgba(118,75,162,.1));border-radius:16px;padding:32px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);margin-top:32px}
+    .total-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.2)}
+    .total-item:last-child{border-bottom:none;font-size:1.25rem;font-weight:700;color:#1e293b}
+    .total-label{color:#64748b;font-weight:500}
+    .total-value{font-weight:600;font-variant-numeric:tabular-nums}
+
+    /* ----------------------- RESPONSIVE ----------------------- */
+    @media(max-width:768px){.container{padding:24px}.header h1{font-size:2rem}.section{padding:24px}.grid,.grid-2,.grid-3{grid-template-columns:1fr}.discount-section{flex-direction:column;align-items:stretch}}
+  </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <h1>✨ Éditeur de Devis</h1>
-      <p>Créez des devis professionnels en quelques clics</p>
+      <p>Créez des devis professionnels conformes aux obligations légales</p>
     </div>
 
-    <!-- Section principale du formulaire -->
-    <div id="form-sections">
-      <!-- Les sections seront injectées dynamiquement par app.js -->
+    <!-- 📝 MÉTA DEVIS -->
+    <div class="section">
+      <h3 class="section-title">📋 Informations du devis</h3>
+      <div class="grid">
+        <div class="form-group"><label>Numéro du devis</label><input id="numeroDevis" value="D-MAN-250622-002"></div>
+        <div class="form-group"><label>Date</label><input type="date" id="dateDevis" value="2025-06-22"></div>
+        <div class="form-group"><label>Objet</label><input id="objetDevis" value="Peinture intérieure salon"></div>
+        <div class="form-group"><label>Devise</label><input id="devise" value="EUR"></div>
+      </div>
     </div>
 
-    <!-- Zone des totaux -->
-    <div class="totals-section">
-      <div id="totaux-container"></div>
+    <!-- 🏢 INFO ARTISAN -->
+    <div class="section">
+      <h3 class="section-title">🏢 Informations de l'artisan / entreprise</h3>
+      <div class="warning-box"><h4>⚠️ Mentions légales obligatoires</h4><p>Ces informations sont <strong>obligatoires</strong> pour tout devis professionnel selon le Code de commerce</p></div>
+      <div class="grid-2">
+        <div class="form-group"><label>Nom / Raison sociale</label><input id="artisanNom" value="Entreprise ABC"></div>
+        <div class="form-group"><label>Adresse</label><input id="artisanAdresse" value="12 rue des Lilas, 75000 Paris"></div>
+        <div class="form-group"><label>Téléphone</label><input id="artisanTel" value="06 00 00 00 00"></div>
+        <div class="form-group"><label>Email</label><input id="artisanEmail" value="contact@abc.fr"></div>
+        <div class="form-group"><label>SIRET / SIREN <span style="color:red">*</span></label><input id="artisanSiret" placeholder="SIRET obligatoire (14 chiffres)"></div>
+        <div class="form-group"><label>Code APE / NAF</label><input id="artisanApe" placeholder="ex: 4391B"></div>
+        <div class="form-group"><label>Forme juridique</label><select id="artisanForme"><option value="">Sélectionner</option><option>Auto-entrepreneur</option><option>EURL</option><option>SARL</option><option>SAS</option><option>SASU</option><option>Entreprise individuelle</option></select></div>
+        <div class="form-group"><label>RCS / RM + Ville</label><input id="artisanRcs" placeholder="ex: RCS Paris 123 456 789"></div>
+        <div class="form-group"><label>Capital social (si société)</label><input id="artisanCapital" placeholder="ex: 10 000 €"></div>
+        <div class="form-group"><label>N° TVA intracommunautaire</label><input id="artisanTva" placeholder="ex: FR12345678901"></div>
+      </div>
     </div>
 
-    <!-- Boutons d'actions -->
-    <div class="actions-section">
-      <button id="add-line" class="btn btn-primary">
-        ➕ Ajouter une prestation
-      </button>
-      <button id="generate-pdf" class="btn btn-secondary">
-        📄 Télécharger le PDF
-      </button>
+    <!-- 🛡️ ASSURANCES -->
+    <div class="section">
+      <h3 class="section-title">🛡️ Assurances professionnelles</h3>
+      <div class="info-box"><h4>ℹ️ Obligations d'assurance</h4><p>L'assurance responsabilité civile professionnelle est obligatoire. L'assurance décennale est requise pour les travaux de construction.</p></div>
+      <div class="grid-2">
+        <div class="form-group"><label>Assureur responsabilité civile</label><input id="assureurRc" placeholder="Nom de l'assureur"></div>
+        <div class="form-group"><label>Numéro de police RC</label><input id="policeRc" placeholder="Numéro de contrat"></div>
+        <div class="form-group"><label>Zone géographique couverte</label><input id="zoneRc" placeholder="ex: France métropolitaine"></div>
+        <div class="form-group"><label>Assureur décennale (si applicable)</label><input id="assureurDecennale" placeholder="Nom de l'assureur décennale"></div>
+        <div class="form-group"><label>Numéro de police décennale</label><input id="policeDecennale" placeholder="Numéro de contrat décennale"></div>
+        <div class="form-group"><label>Zone décennale couverte</label><input id="zoneDecennale" placeholder="Zone géographique"></div>
+      </div>
     </div>
 
-    <!-- Template pour une ligne de prestation (caché) -->
-    <template id="prestation-template">
-      <tr class="prestation-line">
-        <td><input class="prestation-desc" placeholder="Description"></td>
-        <td><input type="number" class="prestation-qte" min="0" value="1"></td>
-        <td><input class="prestation-unit" placeholder="Unité"></td>
-        <td><input type="number" class="prestation-price" min="0" value="0"></td>
-        <td><input type="number" class="prestation-tva" min="0" value="20"></td>
-        <td class="ht">0.00 €</td>
-        <td class="ttc">0.00 €</td>
-        <td><button class="btn btn-danger remove-line">🗑️</button></td>
-      </tr>
-    </template>
+    <!-- 👤 INFO CLIENT -->
+    <div class="section">
+      <h3 class="section-title">👤 Informations client</h3>
+      <div class="grid-2">
+        <div class="form-group"><label>Nom complet</label><input id="clientNom" value="Jean Dupont"></div>
+        <div class="form-group"><label>Adresse</label><input id="clientAdresse" placeholder="Adresse du client"></div>
+        <div class="form-group"><label>Lieu d'exécution des travaux</label><input id="lieuTravaux" placeholder="Si différent de l'adresse client"></div>
+      </div>
+    </div>
+
+    <!-- 📝 CONDITIONS -->
+    <div class="section">
+      <h3 class="section-title">📝 Conditions contractuelles</h3>
+      <div class="grid-2">
+        <div class="form-group"><label>Délai d'exécution</label><input id="delaiExecution" placeholder="ex: 15 jours ouvrés"></div>
+        <div class="form-group"><label>Conditions de paiement</label><textarea id="conditionsPaiement" placeholder="ex: 30% à la commande, 40% à mi-parcours, 30% à la livraison"></textarea></div>
+        <div class="form-group"><label>Validité du devis</label><input id="validiteDevis" value="30 jours"></div>
+        <div class="form-group"><label>Conditions particulières</label><textarea id="conditionsParticulieres" placeholder="Conditions spécifiques au chantier"></textarea></div>
+      </div>
+    </div>
+
+    <!-- 💼 PRESTATIONS -->
+    <div class="section">
+      <h3 class="section-title">💼 Prestations</h3>
+      <div class="table-container"><div class="table-wrapper"><table id="table-prestations"><thead><tr><th>Prestation</th><th>Quantité</th><th>Unité</th><th>Prix unitaire</th><th>TVA (%)</th><th>Total HT</th><th>Total TTC</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>
+      <button class="btn btn-primary" onclick="ajouterLigne()">➕ Ajouter une ligne</button>
+    </div>
+
+    <!-- 🔖 REMISE & TOTAUX -->
+    <div class="discount-section">
+      <div class="form-group" style="flex:1"><label>Remise globale (€)</label><input type="number" id="remise" value="0" oninput="recalculer()"></div>
+      <div class="checkbox-group"><input type="checkbox" id="applyRemise" checked onchange="recalculer()"><label>Appliquer la remise</label></div>
+    </div>
+    <div class="totals-section"><div id="totaux"></div></div>
+
+    <!-- ✍️ VALIDATION -->
+    <div class="section">
+      <h3 class="section-title">✍️ Validation et signature</h3>
+      <div class="info-box"><h4>📋 Mentions obligatoires</h4><p><strong>"Devis reçu avant exécution des travaux"</strong> - Article L214-1 du Code de la consommation</p></div>
+      <div class="grid-2">
+        <div style="text-align:center;border:2px dashed #cbd5e1;padding:40px;border-radius:12px"><p style="font-weight:600;color:#64748b;margin-bottom:20px">Signature du client</p><p style="font-size:.9rem;color:#64748b">Date : ________________</p><p style="font-size:.9rem;color:#64748b;margin-top:40px">"Devis reçu avant exécution des travaux"</p></div>
+        <div style="text-align:center;border:2px dashed #cbd5e1;padding:40px;border-radius:12px"><p style="font-weight:600;color:#64748b;margin-bottom:20px">Signature de l'entreprise</p><p style="font-size:.9rem;color:#64748b">Date : ________________</p></div>
+      </div>
+    </div>
+
+    <!-- 📥 ACTIONS -->
+    <div class="download-section">
+      <button class="btn btn-primary" onclick="simulerDonneesOpenAI()">🤖 Simuler données OpenAI</button>
+      <button class="btn btn-secondary" onclick="genererPDF()">📄 Télécharger le PDF</button>
+    </div>
   </div>
 
-  <!-- Overlay de chargement -->
-  <div id="loading-overlay" style="display: none;">
-    <div class="spinner"></div>
-    <p>Génération du PDF en cours...</p>
-  </div>
+  <!-- SCRIPT PRINCIPAL -->
+  <script>
+    const { jsPDF } = window.jspdf;
+    const urlParams = new URLSearchParams(location.search);
+    let data = { prestations: [] };
+    if(urlParams.get('data')){
+      try{ data = JSON.parse(decodeURIComponent(urlParams.get('data'))); data.prestations = data.prestations || []; }catch(e){ console.error(e); }
+    }
+
+    function processerDonneesOpenAI(openaiData){
+      if(openaiData.prestations){
+        data.prestations = openaiData.prestations.map(p=>({
+          typedeprestation:p.typedeprestation||p.prestation||p.description||'',
+          quantite:{ valeur:p.quantite?.valeur||p.quantite||1, unite:p.quantite?.unite||p.unite||'' },
+          prixunitaire:parseFloat(p.prixunitaire)||0,
+          tauxtva:parseFloat(p.tauxtva||p.tva)||20
+        }));
+      }
+      if(openaiData.nomduclient) document.getElementById('clientNom').value = openaiData.nomduclient;
+      if(openaiData.objet) document.getElementById('objetDevis').value = openaiData.objet;
+    }
+
+    window.addEventListener('message',e=>{ if(e.data?.type==='openai-data'){ processerDonneesOpenAI(e.data.payload); render(); }} );
+
+    function simulerDonneesOpenAI(){
+      processerDonneesOpenAI({ nomduclient:'Jean Dupont', objet:'Rénovation salle de bain', prestations:[{ typedeprestation:'Pose de carrelage',quantite:{valeur:25,unite:'m²'},prixunitaire:45,tauxtva:20 } ] });
+      render();
+    }
+
+    const tbody = document.querySelector('#table-prestations tbody');
+    const remiseInput = document.getElementById('remise');
+    const applyRemise = document.getElementById('applyRemise');
+
+    function rowHTML(i,p){
+      const prix = (p.prixunitaire==="à vérifier"||p.prixunitaire===undefined)?0:p.prixunitaire;
+      const tva = (p.tauxtva==="à vérifier"||p.tauxtva===undefined)?20:p.tauxtva;
+      const qVal = p.quantite?.valeur||0;
+      const qUnit = p.quantite?.unite||'';
+      return `<td><input value="${p.typedeprestation||''}" oninput="data.prestations[${i}].typedeprestation=this.value"></td>
+        <td><input type="number" min="0" value="${qVal}" oninput="data.prestations[${i}].quantite.valeur=parseFloat(this.value)||0;recalculer()"></td>
+        <td><input value="${qUnit}" oninput="data.prestations[${i}].quantite.unite=this.value"></td>
+        <td><input type="number" min="0" value="${prix}" oninput="data.prestations[${i}].prixunitaire=parseFloat(this.value)||0;recalculer()" ${prix===0?'placeholder="À définir"':''}></td>
+        <td><input type="number" min="0" value="${tva}" oninput="data.prestations[${i}].tauxtva=parseFloat(this.value)||0;recalculer()"></td>
+        <td class="ht">0.00</td><td class="ttc">0.00</td>
+        <td><button class="btn btn-danger" onclick="supprimer(${i})">🗑️</button></td>`;
+    }
+
+    function render(){
+      tbody.innerHTML='';
+      data.prestations.forEach((p,i)=>{ if(!p.quantite) p.quantite={valeur:0,unite:''}; const tr=document.createElement('tr'); tr.innerHTML=rowHTML(i,p); tr.classList.add('fade-in'); tbody.appendChild(tr); });
+      recalculer();
+    }
+
+    function ajouterLigne(){ data.prestations.push({ typedeprestation:'',quantite:{valeur:0,unite:''},prixunitaire:0,tauxtva:20 }); render(); }
+    function supprimer(i){ data.prestations.splice(i,1); render(); }
+
+    function calculs(){
+      let totalHT=0,totalTVA=0;
+      data.prestations.forEach(p=>{ const ht=p.prixunitaire*p.quantite.valeur; const tva = ht*(p.tauxtva/100); totalHT+=ht; totalTVA+=tva; });
+      const remise = applyRemise.checked ? (parseFloat(remiseInput.value)||0):0;
+      const sousTotal = totalHT-remise;
+      const totalTTC = sousTotal+totalTVA;
+      return {totalHT,totalTVA,remise,sousTotal,totalTTC};
+    }
+
+    function recalculer(){
+      tbody.querySelectorAll('tr').forEach((tr,i)=>{
+        const p=data.prestations[i];
+        const ht=p.prixunitaire*p.quantite.valeur;
+        const ttc=ht*(1+p.tauxtva/100);
+        tr.querySelector('.ht').textContent = ht.toFixed(2)+' €';
+        tr.querySelector('.ttc').textContent = ttc.toFixed(2)+' €';
+      });
+      const {totalHT,totalTVA,remise,sousTotal,totalTTC}=calculs();
+      let html=`<div class="total-item"><span class="total-label">Total HT :</span><span class="total-value">${totalHT.toFixed(2)} €</span></div>`;
+      if(remise>0){ html+=`<div class="total-item"><span class="total-label">Remise :</span><span class="total-value">-${remise.toFixed(2)} €</span></div>`; }
+      html+=`<div class="total-item"><span class="total-label">Sous-total :</span><span class="total-value">${sousTotal.toFixed(2)} €</span></div><div class="total-item"><span class="total-label">TVA :</span><span class="total-value">${totalTVA.toFixed(2)} €</span></div><div class="total-item"><span class="total-label">Total TTC :</span><span class="total-value">${totalTTC.toFixed(2)} €</span></div>`;
+      document.getElementById('totaux').innerHTML=html;
+    }
+
+    function genererPDF(){
+      const doc = new jsPDF({unit:'pt',format:'a4'});
+      const primary=[102,126,234]; const accent=[16,185,129]; const dark=[30,41,59]; const light=[148,163,184];
+      // Header
+      doc.setFillColor(...primary); doc.rect(0,0,595,80,'F'); doc.setTextColor(255,255,255); doc.setFontSize(28); doc.setFont('helvetica','bold'); doc.text('DEVIS',40,45);
+      const numeroDevis=document.getElementById('numeroDevis').value; const dateDevis=document.getElementById('dateDevis').value;
+      doc.setFontSize(12); doc.text(`N° ${numeroDevis}`,595-40-doc.getTextWidth(`N° ${numeroDevis}`),35); doc.text(`Date: ${dateDevis}`,595-40-doc.getTextWidth(`Date: ${dateDevis}`),55);
+      doc.setTextColor(...dark);
+      // Entreprise box
+      doc.setFillColor(250,251,255); doc.rect(40,100,250,110,'F'); doc.setDrawColor(...light); doc.rect(40,100,250,110,'D');
+      doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...primary); doc.text('ENTREPRISE',50,120);
+      doc.setFontSize(11); doc.setFont('helvetica','normal'); doc.setTextColor(...dark);
+      const artisanInfo=[ document.getElementById('artisanNom').value, document.getElementById('artisanAdresse').value, `Tél: ${document.getElementById('artisanTel').value}`, document.getElementById('artisanEmail').value, `SIRET: ${document.getElementById('artisanSiret').value}`, document.getElementById('artisanApe').value ? `APE/NAF: ${document.getElementById('artisanApe').value}`:'', document.getElementById('artisanRcs').value ];
+      let y=140; artisanInfo.forEach(t=>{ if(t) doc.text(t,50,y); y+=12; });
+      // Client box
+      doc.setFillColor(250,255,250); doc.rect(305,100,250,80,'F'); doc.setDrawColor(...light); doc.rect(305,100,250,80,'D');
+      doc.setFontSize(14); doc.setTextColor(...accent); doc.setFont('helvetica','bold'); doc.text('CLIENT',315,120);
+      doc.setFontSize(11); doc.setFont('helvetica','normal'); doc.setTextColor(...dark);
+      const clientInfo=[ document.getElementById('clientNom').value, document.getElementById('clientAdresse').value ];
+      y=140; clientInfo.forEach(t=>{ if(t) doc.text(t,315,y); y+=12; });
+      // Objet
+      y=200; doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(...primary); doc.text('OBJET:',40,y); doc.setFont('helvetica','normal'); doc.setTextColor(...dark); doc.text(document.getElementById('objetDevis').value,85,y);
+      // Prestations table
+      const body=data.prestations.map(p=>[p.typedeprestation||'',p.quantite.valeur.toString(),p.quantite.unite,`${p.prixunitaire} €`,`${p.tauxtva}%`,`${(p.prixunitaire*p.quantite.valeur).toFixed(2)} €`,`${(p.prixunitaire*p.quantite.valeur*(1+p.tauxtva/100)).toFixed(2)} €`]);
+      doc.autoTable({startY:y+30,head:[['Prestation','Qté','Unité','P.U.','TVA','Total HT','Total TTC']],body,styles:{fontSize:10,textColor:dark,lineColor:[226,232,240],lineWidth:.5},headStyles:{fillColor:primary,textColor:[255,255,255],fontStyle:'bold',halign:'center'},alternateRowStyles:{fillColor:[248,250,252]},columnStyles:{0:{halign:'left',cellWidth:120},1:{halign:'center',cellWidth:40},2:{halign:'center',cellWidth:40},3:{halign:'right',cellWidth:60},4:{halign:'center',cellWidth:40},5:{halign:'right',cellWidth:70},6:{halign:'right',cellWidth:70}}});
+      // Totals
+      const {totalHT,totalTVA,remise,sousTotal,totalTTC}=calculs(); y=doc.lastAutoTable.finalY+20; const boxH=remise>0?100:80; doc.setFillColor(248,250,252); doc.rect(350,y,205,boxH,'F'); doc.setDrawColor(...light); doc.rect(350,y,205,boxH,'D'); doc.setFontSize(11); doc.setTextColor(...dark);
+      let yy=y+20; doc.text('Total HT:',360,yy); doc.text(`${totalHT.toFixed(2)} €`,545-doc.getTextWidth(`${totalHT.toFixed(2)} €`),yy);
+      if(remise>0){yy+=15; doc.setTextColor(239,68,68); doc.text('Remise:',360,yy); doc.text(`-${remise.toFixed(2)} €`,545-doc.getTextWidth(`-${remise.toFixed(2)} €`),yy); doc.setTextColor(...dark); yy+=15; doc.text('Sous-total:',360,yy); doc.text(`${sousTotal.toFixed(2)} €`,545-doc.getTextWidth(`${sousTotal.toFixed(2)} €`),yy); }
+      yy+=15; doc.text('TVA:',360,yy); doc.text(`${totalTVA.toFixed(2)} €`,545-doc.getTextWidth(`${totalTVA.toFixed(2)} €`),yy);
+      yy+=20; doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...primary); doc.text('TOTAL TTC:',360,yy); doc.text(`${totalTTC.toFixed(2)} €`,545-doc.getTextWidth(`${totalTTC.toFixed(2)} €`),yy);
+      // Footer
+      const footerY=842-50; doc.setFillColor(...primary); doc.rect(0,footerY,595,50,'F'); doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(255,255,255); doc.text('Devis généré automatiquement - Valable 30 jours',40,footerY+20); const date=new Date().toLocaleDateString('fr-FR'); doc.text(`Généré le ${date}`,595-40-doc.getTextWidth(`Généré le ${date}`),footerY+20);
+      doc.save(`Devis_${document.getElementById('clientNom').value.replace(/\s+/g,'_')}_${numeroDevis}.pdf`);
+    }
+
+    // INIT
+    if(data.prestations.length===0) data.prestations.push({typedeprestation:'',quantite:{valeur:0,unite:''},prixunitaire:0,tauxtva:20});
+    render();
+  </script>
 </body>
 </html>
