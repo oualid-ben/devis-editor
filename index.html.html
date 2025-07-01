@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Éditeur de Devis Professionnel</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>✨ Éditeur de Devis</h1>
+      <p>Créez des devis professionnels en quelques clics</p>
+    </div>
+
+    <!-- Section principale du formulaire -->
+    <div id="form-sections">
+      <!-- Les sections seront injectées dynamiquement par app.js -->
+    </div>
+
+    <!-- Zone des totaux -->
+    <div class="totals-section">
+      <div id="totaux-container"></div>
+    </div>
+
+    <!-- Boutons d'actions -->
+    <div class="actions-section">
+      <button id="add-line" class="btn btn-primary">
+        ➕ Ajouter une prestation
+      </button>
+      <button id="generate-pdf" class="btn btn-secondary">
+        📄 Télécharger le PDF
+      </button>
+    </div>
+
+    <!-- Template pour une ligne de prestation (caché) -->
+    <template id="prestation-template">
+      <tr class="prestation-line">
+        <td><input class="prestation-desc" placeholder="Description"></td>
+        <td><input type="number" class="prestation-qte" min="0" value="1"></td>
+        <td><input class="prestation-unit" placeholder="Unité"></td>
+        <td><input type="number" class="prestation-price" min="0" value="0"></td>
+        <td><input type="number" class="prestation-tva" min="0" value="20"></td>
+        <td class="ht">0.00 €</td>
+        <td class="ttc">0.00 €</td>
+        <td><button class="btn btn-danger remove-line">🗑️</button></td>
+      </tr>
+    </template>
+  </div>
+
+  <!-- Overlay de chargement -->
+  <div id="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p>Génération du PDF en cours...</p>
+  </div>
+</body>
+</html>
